@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jonáš & Natálie — 13. 6. 2026</title>
+  <!-- Google Analytics 4 — replace G-XXXXXXXXXX with your Measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #f7f5f1;
+      --amber:   #c07830;
+      --amber-d: #9e6020;
+      --blue:    #8faac8;
+      --dark:    #2c2825;
+      --mid:     #7a6e66;
+      --light:   rgba(255,255,255,0.75);
+      --grid:    rgba(143,170,200,0.25);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 1.08rem;
+      color: var(--dark);
+      background-color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    /* Centre column grid strip — fixed, sits behind all content.
+       Width tracks the content column (.wrap max-width 940px) so it
+       aligns on every screen size. */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(940px, 100vw);
+      z-index: -1;
+      background-image: url('pozadni_long_alpha.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: top center;
+    }
+
+    /* All content sections need relative positioning for moth overlays */
+    .wrap { position: relative; }
+
+    /* Scattered moth decorations */
+    .moth-deco {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      z-index: 1;
+    }
+    .moth-deco img {
+      display: block;
+      max-width: none;
+    }
+    /* clip helpers for showing only one moth from the pair image */
+    .moth-clip-top  img { clip-path: inset(0 0 62% 0); }
+    .moth-clip-bot  img { clip-path: inset(60% 0 0 0); }
+
+    /*
+      Animated moth sprite — 20 frames × 360px = 7200 × 258 px
+      Displayed at 180 × 129 px  →  background-size = 20 × 180 = 3600 px
+      JS controls play/pause; CSS just defines one flap cycle.
+    */
+    .moth-animated {
+      display: block;
+      width: 180px;
+      height: 168px;
+      background-image: url('moth_sprite.png');
+      background-repeat: no-repeat;
+      background-size: 3600px auto;
+      background-position: 0 0;
+      animation: moth-flap 0.28s steps(20) infinite;
+      animation-play-state: paused;
+    }
+
+    @keyframes moth-flap {
+      to { background-position: -3600px 0; }
+    }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      padding: 0.5rem 1.5rem;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--grid);
+      max-width: 100vw;
+      overflow: hidden;
+    }
+
+    nav a {
+      text-decoration: none;
+      padding: 0.15rem 0.3rem;
+      border-radius: 2px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+    }
+
+    nav a:hover {
+      background: rgba(192,120,48,0.08);
+    }
+
+    /* All nav images: 200px canvas, displayed at 56px — body zone centred, nothing clipped */
+    .nav-img {
+      display: block;
+      height: 56px;
+      width: auto;
+      flex-shrink: 0;
+      transition: filter 0.2s;
+    }
+
+    nav a:hover .nav-img {
+      filter: brightness(0.55);
+    }
+
+    /* ── HERO ─────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Handwritten hero images — grey ink baked into the PNG */
+    .hero-title {
+      width: clamp(220px, 44vw, 500px);
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-img {
+      width: clamp(160px, 28vw, 320px);
+      margin: 0.6rem 0;
+      filter: drop-shadow(0 16px 32px rgba(0,0,0,0.08));
+    }
+
+    .hero-date {
+      width: clamp(70px, 12vw, 150px);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-venue {
+      width: clamp(120px, 23vw, 260px);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: var(--blue);
+      opacity: 0.7;
+      animation: bob 2s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%        { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ── SECTION SHELL ────────────────────────────────── */
+    .wrap {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    .wrap + .wrap {
+      border-top: 1px solid var(--grid);
+    }
+
+    /* Handwritten section heading images — 520px canvas, displayed at 160px */
+    .section-title-img {
+      display: block;
+      height: 160px;
+      width: auto;
+      max-width: 100%;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* ── MOTH DIVIDER ─────────────────────────────────── */
+    .moth-divider {
+      display: flex;
+      justify-content: center;
+      margin: 2.5rem 0 0;
+    }
+    .moth-divider img {
+      width: 72px;
+      opacity: 0.28;
+    }
+
+    /* ── TIMELINE ─────────────────────────────────────── */
+    .timeline {
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .tl-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 1.5rem;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid var(--grid);
+      align-items: start;
+    }
+    .tl-item:last-child { border-bottom: none; }
+
+    .tl-time {
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--amber);
+      text-align: right;
+      padding-top: 0.1rem;
+    }
+
+    .tl-body strong {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--dark);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .tl-body p {
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--mid);
+    }
+
+    /* ── MAPS ─────────────────────────────────────────── */
+    .maps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .map-card {
+      background: white;
+      border-radius: 3px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+
+    .map-card iframe {
+      display: block;
+      width: 100%;
+      height: 210px;
+      border: none;
+    }
+
+    .map-label {
+      font-size: 1.05rem;
+      font-weight: 400;
+      padding: 0.75rem 1rem;
+      color: var(--mid);
+      border-top: 1px solid rgba(143,170,200,0.2);
+    }
+
+    /* ── TRANSPORT ────────────────────────────────────── */
+    .transport-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .transport-card {
+      background: var(--light);
+      border: 1px solid var(--grid);
+      border-radius: 3px;
+      padding: 1.5rem;
+    }
+
+    .transport-card h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--amber);
+      margin-bottom: 0.65rem;
+    }
+
+    .transport-card p {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--mid);
+    }
+
+    /* ── GIFTS ────────────────────────────────────────── */
+    .gifts-body {
+      max-width: 560px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .gifts-body p {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--mid);
+    }
+
+    .gifts-highlight {
+      font-size: 1.45rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--amber);
+      display: block;
+      margin: 1.25rem 0;
+      line-height: 1.4;
+    }
+
+    /* ── INFO LIST ────────────────────────────────────── */
+    .info-list {
+      max-width: 600px;
+      margin: 0 auto;
+      list-style: none;
+    }
+
+    .info-list li {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--grid);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--mid);
+    }
+
+    .info-list li:last-child { border-bottom: none; }
+
+    .info-list li::before {
+      content: '—';
+      color: var(--blue);
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+
+    /* ── FORM ─────────────────────────────────────────── */
+    .form-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--light);
+      border: 1px solid var(--grid);
+      border-radius: 4px;
+      padding: 2.5rem;
+    }
+
+    .form-group { margin-bottom: 1.5rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 0.35rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid rgba(143,170,200,0.5);
+      border-radius: 2px;
+      background: rgba(247,245,241,0.9);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 1rem;
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--amber);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .radio-group,
+    .check-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: 0.3rem 0;
+    }
+
+    .radio-group label,
+    .check-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+      color: var(--mid);
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .radio-group input,
+    .check-group input {
+      width: auto;
+      accent-color: var(--amber);
+      flex-shrink: 0;
+    }
+
+    .field-note {
+      font-size: 0.82rem;
+      color: var(--blue);
+      margin-top: 0.3rem;
+    }
+
+    .btn-submit {
+      display: block;
+      width: 100%;
+      margin-top: 2rem;
+      padding: 0.9rem 1rem;
+      background: var(--amber);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-submit:hover {
+      background: var(--amber-d);
+      transform: translateY(-1px);
+    }
+
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.4rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    /* ── CONTACT ──────────────────────────────────────── */
+    .contact-body {
+      text-align: center;
+      color: var(--mid);
+    }
+
+    .contact-body p {
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .contact-email {
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--amber);
+      text-decoration: none;
+    }
+
+    .contact-email:hover { text-decoration: underline; }
+
+    .contact-witnesses {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--blue);
+    }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--grid);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    footer p {
+      font-size: 1.05rem;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--mid);
+    }
+
+    .footer-moth {
+      position: absolute;
+      right: 4%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width: 620px) {
+      nav { gap: 0.1rem; padding: 0.3rem 0.5rem; }
+      nav a { padding: 0.1rem 0.15rem; }
+      .nav-img { height: 40px; }
+
+      .hero-moth { display: none; }
+
+      .form-row { grid-template-columns: 1fr; }
+      .form-wrap { padding: 1.5rem; }
+
+      .footer-moth { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#program"><img class="nav-img" src="menu_alpha/program_nav.png" alt="program"></a>
+    <a href="#mista"><img class="nav-img" src="menu_alpha/mista_nav.png" alt="místa"></a>
+    <a href="#doprava"><img class="nav-img" src="menu_alpha/doprava_nav.png" alt="doprava"></a>
+    <a href="#dary"><img class="nav-img" src="menu_alpha/dary_nav.png" alt="dary"></a>
+    <a href="#info" style="margin-top:-2px"><img class="nav-img" src="menu_alpha/cos_nav.png" alt="co s sebou"></a>
+    <a href="#rsvp" style="margin-top:-20px"><img class="nav-img" src="menu_alpha/rsvp_nav.png" alt="RSVP"></a>
+    <a href="#kontakt"><img class="nav-img" src="menu_alpha/kontakt_nav.png" alt="kontakty"></a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <img class="hero-title" src="jn_alpha.png" alt="jonáš a natálie">
+    <img class="hero-img" src="mury_na_pivu_alpha.png" alt="Jonáš a Natálie — moths on a pint">
+    <img class="hero-date" src="datum_alpha.png" alt="13. 6. 2026">
+    <img class="hero-venue" src="vch_alpha.png" alt="velká chmeliština">
+    <span class="hero-scroll">↓</span>
+  </section>
+
+  <!-- PROGRAM -->
+  <div class="wrap" id="program">
+    <!-- animated moth peeking in from the right -->
+    <div class="moth-deco"
+         style="top:-30px; right:-110px; transform:rotate(-14deg) scaleX(-1);">
+      <div class="moth-animated" style="opacity:.45;"></div>
+    </div>
+    <img class="section-title-img" src="menu_alpha/program_title.png" alt="program">
+    <div class="timeline">
+      <div class="tl-item">
+        <span class="tl-time">12:00</span>
+        <div class="tl-body">
+          <strong>obřad</strong>
+          <p>kostel sv. Bartoloměje, Velká Chmelištná</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">po obřadu</span>
+        <div class="tl-body">
+          <strong>výlet</strong>
+          <p>procházka cca 5 km — pohodlná obuv nutná!</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">odpoledne</span>
+        <div class="tl-body">
+          <strong>párty</strong>
+          <p>kemp, jídlo, pití, hudba, slavení</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">v noci</span>
+        <div class="tl-body">
+          <strong>ohníček</strong>
+          <p>felení, hraní na kytárky, hvězdy, pivo, písničky</p>
+        </div>
+      </div>
+      <div class="tl-item">
+          <span class="tl-time">neděle</span>
+          <div class="tl-body">
+            <strong>odjezd</strong>
+             <p>úklid areálu a odjezd do 13:00</p>
+        </div>
+      </div>
+    </div>
+    <div class="moth-divider"><img src="mura_1_alpha.png" alt="" style="transform:scaleX(-1);"></div>
+  </div>
+
+  <!-- MISTA -->
+  <div class="wrap" id="mista">
+    <img class="section-title-img" src="menu_alpha/mista_title.png" alt="místa">
+    <div class="maps-grid">
+      <div class="map-card">
+        <iframe src="https://mapy.com/s/hozogobele" title="Místo obřadu" loading="lazy"></iframe>
+        <p class="map-label">místo obřadu</p>
+      </div>
+      <div class="map-card">
+        <iframe src="https://mapy.com/s/katemafemo" title="Místo párty a kempu" loading="lazy"></iframe>
+        <p class="map-label">párty &amp; kemp</p>
+      </div>
+      <div class="map-card">
+        <iframe src="https://mapy.com/s/busadetova" title="Trasa výletu" loading="lazy"></iframe>
+        <p class="map-label">trasa výletu</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOPRAVA -->
+  <div class="wrap" id="doprava">
+    <!-- two moths drifting in from the left -->
+    <div class="moth-deco" style="top:10px; left:-150px; transform:rotate(22deg);">
+      <img src="mura_1_alpha.png" alt="" width="180" style="opacity:.38;">
+    </div>
+    <div class="moth-deco" style="top:100px; left:-120px; transform:rotate(15deg) scaleX(-1);">
+      <img src="mura_2_alpha.png" alt="" width="140" style="opacity:.32;">
+    </div>
+    <img class="section-title-img" src="menu_alpha/doprava_title.png" alt="doprava">
+    <div class="transport-grid">
+      <div class="transport-card">
+        <h3>příjezd</h3>
+        <p>Vesnice je sice kousek od Prahy, je ale špatně dostupná hromadnou dopravou. Pro svatebčany bude objednán autobus z Rakovníka s odjezdem v 11:00 (navazující na vlaky R24, 9:00 z Masarykova nádraží a T7, 9:07 z Hlaváku). Pokud z jakýchkoliv důvodů plánujete přijet autem, prosíme o nahlášení dopředu a sdílení volných míst</p>
+      </div>
+      <div class="transport-card">
+        <h3>cyklojízda</h3>
+        <p>V pátek 12.6. bude organizována společná cyklojízda z Prahy. Je možné se připojit hned v Praze, nebo po cestě, např. v Rakovníku. Pro bližší info vyplňte zájem o účast ve formuláři.</p>
+      </div>
+      <div class="transport-card">
+        <h3>parkování — chmelištná</h3>
+        <p>Parkování je možné u křižovatky v obci, kolem obecního úřadu a na zahradě za naší chaloupkou. Na místě bude vše vyznačeno</p>
+      </div>
+      <div class="transport-card">
+        <h3>parkování — soseň</h3>
+        <p>Je možné zaparkovat přímo v areálu kempu, nicméně je kapacita omezená. Prosíme o nahlášení aut dopředu. V případě naplnění parkovací kapacity můžete parkovat ve Velké Chmelištné.</p>
+      </div>
+      <div class="transport-card">
+        <h3>přesuny</h3>
+        <p>Obřad a následné veselí probíhají na různých místech. Důležitou součástí veselky bude společná procházka, nicméně na místě bude k dispozici kyvadlový automobil, který vám v případě zájmu odveze bagáž, nebo i vás.</p>
+      </div>
+      <div class="transport-card">
+        <h3>odjezd</h3>
+        <p>Areál kempu musíme opustit do 13:00. Společnou dopravu z místa veselky nebudeme zařizovat, ze zastávky Oráčov (3 km pěšky) jedou vlaky na Prahu v 8:46, 9:33, 10:45 (přímý), 11:32, 12:42, 13:34, 14:45, 15:31 a později</p>
+      </div>
+    </div>
+    <div class="moth-divider"><img src="mura_2_alpha.png" alt=""></div>
+  </div>
+
+  <!-- DARY -->
+  <div class="wrap" id="dary">
+    <div class="moth-deco" style="bottom:-90px; right:-90px; transform:rotate(-18deg) scaleX(-1);">
+      <img src="mura_2_alpha.png" alt="" width="170" style="opacity:.45;">
+    </div>
+    <img class="section-title-img" src="menu_alpha/dary_title.png" alt="dary">
+    <div class="gifts-body">
+      <p>Nejvíc nás potěší nehmotné dary —</p>
+      <span class="gifts-highlight">příspěvek na veselku a svatební cestu<br>na účet: xxxxx ♡</span>
+      <p>Pokud vás ale napadl báječný konkrétní nápad, nebráníme se — doporučujeme ho nejdřív probrat se svědky.</p>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="wrap" id="info">
+    <div class="moth-deco" style="top:-60px; left:-100px; transform:rotate(8deg);">
+      <img src="mura_1_alpha.png" alt="" width="160" style="opacity:.4;">
+    </div>
+    <img class="section-title-img" src="menu_alpha/cos_title.png" alt="co s sebou">
+    <ul class="info-list">
+      <li>Slavnostní, ale pohodlné oblečení — většina veselí probíhá venku. Tak abyste se cítili dobře, pohodlně a přiměřeně slavnostně.</li>
+      <li>Pevná pohodlná obuv, půjdeme cca 5 km pěšky.</li>
+      <li>Hudební nástroj, pokud hrajete — bude se felit u ohníčku.</li>
+      <li>Budeme moc rádi, když přivezete oblíbenou svatební fotografii (svoji, rodinnou, kamarádů atp.). Ideálně kopii, ale poradíme si i s originálem.</li>
+      <li>Spacák &amp; karimatka pro ty, kdo budou spát ve stanu, pod širákem nebo ve společenské místnosti</li>
+    </ul>
+    <div class="moth-divider"><img src="mura_1_alpha.png" alt=""></div>
+  </div>
+
+  <!-- RSVP -->
+  <div class="wrap" id="rsvp">
+    <!-- animated moth floating right -->
+    <div class="moth-deco"
+         style="top:20px; right:-115px; transform:rotate(10deg);">
+      <div class="moth-animated" style="opacity:.43;"></div>
+    </div>
+    <img class="section-title-img" src="menu_alpha/rsvp_title.png" alt="RSVP">
+    <div class="form-wrap">
+      <div class="form-success" id="form-success">
+        Díky moc! Těšíme se na vás ♡
+      </div>
+      <form id="rsvp-form" action="https://formspree.io/f/PLACEHOLDER" method="POST">
+
+        <div class="form-group">
+          <label>Vaše jméno / jména *</label>
+          <input type="text" name="jmeno" required placeholder="Jana, Petr…">
+        </div>
+
+        <div class="form-group">
+          <label>E-mail *</label>
+          <input type="email" name="email" required placeholder="vas@email.cz">
+          <p class="field-note">Pošleme vám potvrzení a případné aktualizace.</p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kolik přijede dospělých?</label>
+            <select name="pocet_lidi">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Kolik dětí?</label>
+            <select name="pocet_deti">
+              <option value="0" selected>0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="3">4</option>
+              <option value="4+">5 a více</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Kdy přijedete?</label>
+          <input type="text" name="prijezd" placeholder="v sobotu před obřadem, v sobotu večer atp…">
+        </div>
+
+        <div class="form-group">
+          <label>Zúčastníte se…</label>
+          <div class="radio-group">
+            <label><input type="radio" name="ucast" value="obrad_i_party" checked> obřadu i oslavy</label>
+            <label><input type="radio" name="ucast" value="jen_obrad"> pouze obřadu</label>
+            <label><input type="radio" name="ucast" value="jen_party"> pouze oslavy</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Jak přijedete?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="auto" value="ano_volna" id="auto-volna"> autem, mám volná místa, upřesním níže</label>
+            <label><input type="radio" name="auto" value="ano_plne"> autem, ale plně obsazeným</label>
+            <label><input type="radio" name="auto" value="ne"> přijedu po vlastní ose jinak než autem</label>
+            <label><input type="radio" name="auto" value="ne"> chci jet společným autobusem z Rakovníku</label>
+            <label><input type="radio" name="auto" value="ne"> zúčastním se společné cyklojízdy</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="volna-mista-group" style="display:none">
+          <label>Kolik máte volných míst?</label>
+          <select name="volna_mista">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4+">4 a více</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Co nejíte?</label>
+          <textarea name="jidlo" rows="3" placeholder="houby, maso, bezlepek, vegan, alergie na ořechy…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Spaní</label>
+          <div class="check-group">
+            <label><input type="checkbox" name="spani" value="stan"> přivezu si stan </label>
+            <label><input type="checkbox" name="spani" value="mistnost"> společenská místnost na zemi </label>
+            <label><input type="checkbox" name="spani" value="mistnost"> prosím o lůžko v chatce </label>
+            <label><input type="checkbox" name="spani" value="ne"> nebudu spát, odjíždím</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pomoc s přípravami</label>
+          <div class="check-group">
+            <label><input type="checkbox" name="pomoc" value="pripravy"> rád/a pomůžu s přípravami</label>
+            <label><input type="checkbox" name="pomoc" value="peceni"> rád/a upeču / uvařím něco</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Otázky, nápady, poznámky, prosby: </label>
+          <textarea name="poznamka" rows="3" placeholder="…"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">odeslat ♡</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="wrap" id="kontakt">
+    <div class="moth-deco" style="bottom:-110px; left:-130px; transform:rotate(-8deg) scaleX(-1);">
+      <img src="mura_1_alpha.png" alt="" width="180" style="opacity:.35;">
+    </div>
+    <div class="moth-deco" style="bottom:-60px; left:-80px; transform:rotate(5deg);">
+      <img src="mura_2_alpha.png" alt="" width="130" style="opacity:.28;">
+    </div>
+    <img class="section-title-img" src="menu_alpha/kontakt_title.png" alt="kontakt">
+    <div class="contact-body">
+      <p>Máte otázky? Napište nám!</p>
+      <br>
+      <a href="mailto:anezka@email.com" class="contact-email">mailanezcezavinac.cezet</a>
+      <p class="contact-witnesses">nebo se obraťte na svědky — Toník a Šimon</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>jonáš &amp; natálie &nbsp;·&nbsp; 13. 6. 2026 &nbsp;·&nbsp; velká chmelištná</p>
+    <img class="footer-moth" src="mura_2_alpha.png" alt="">
+  </footer>
+
+  <script>
+    // ── Car-seats toggle ─────────────────────────────────────────────────
+    document.querySelectorAll('input[name="auto"]').forEach(el => {
+      el.addEventListener('change', () => {
+        document.getElementById('volna-mista-group').style.display =
+          document.getElementById('auto-volna').checked ? 'block' : 'none';
+      });
+    });
+
+    // ── Formspree AJAX submit ─────────────────────────────────────────────
+    const form = document.getElementById('rsvp-form');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const res = await fetch(form.action, {
+        method: 'POST', body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        form.style.display = 'none';
+        document.getElementById('form-success').style.display = 'block';
+      } else {
+        alert('Něco se pokazilo. Zkuste to prosím znovu nebo nám napište na email.');
+      }
+    });
+
+    // ── Moth wing-flap sequencer ─────────────────────────────────────────
+    // Each moth is still most of the time.
+    // Every 5–12 s it quickly flaps twice, then goes still again.
+    const FLAP_MS = 280;   // matches CSS animation-duration (0.28 s)
+    const sleep   = ms => new Promise(r => setTimeout(r, ms));
+
+    async function runMoth(el) {
+      while (true) {
+        // Long random pause — 5 to 12 seconds
+        const wait = 5000 + Math.random() * 7000;
+        el.style.animationPlayState = 'paused';
+        await sleep(wait);
+
+        // Two quick flaps
+        el.style.animationPlayState = 'running';
+        await sleep(2 * FLAP_MS);      // exactly 2 full cycles → back to frame 0
+
+        // Stop on open-wing frame
+        el.style.animationPlayState = 'paused';
+      }
+    }
+
+    // Stagger so the two moths never flap simultaneously
+    document.querySelectorAll('.moth-animated').forEach((el, i) => {
+      const jitter = i * 3500 + Math.random() * 2000;
+      setTimeout(() => runMoth(el), jitter);
+    });
+  </script>
+
+</body>
+</html>
