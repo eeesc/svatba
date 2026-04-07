@@ -101,13 +101,17 @@
 
     /* ── NAV ──────────────────────────────────────────── */
     nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.6rem;
       flex-wrap: wrap;
       padding: 0.6rem 1.5rem;
-      background: rgba(255,255,255,0.97);
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--grid);
     }
 
