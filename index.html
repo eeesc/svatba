@@ -39,7 +39,7 @@
       font-size: 1.08rem;
       color: var(--dark);
       background-color: #ffffff;
-      overflow-x: clip;
+      overflow-x: hidden;
     }
 
     /* Centre column grid strip — fixed, sits behind all content.
@@ -103,15 +103,14 @@
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
-      z-index: 200;
+      z-index: 9999;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.6rem;
       flex-wrap: wrap;
       padding: 0.6rem 1.5rem;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(10px);
+      background: #ffffff;
       border-bottom: 1px solid var(--grid);
     }
 
