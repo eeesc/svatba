@@ -811,8 +811,17 @@
 
         <div class="form-group">
           <label>Pomoc s přípravami</label>
+          <div class="radio-group">
+            <label><input type="radio" name="pomoc_zda" value="ano" id="pomoc-ano"> ano, rád/a pomůžu</label>
+            <label><input type="radio" name="pomoc_zda" value="ne"> ne, pomůžu s konzumací</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="pomoc-detail-group" style="display:none">
+          <label>S čím pomůžu</label>
           <div class="check-group">
-            <label><input type="checkbox" name="pomoc" value="pripravy"> rád/a pomůžu s přípravami</label>
+            <label><input type="checkbox" name="pomoc" value="pripravy_predem"> rád/a pomůžu s přípravami předem</label>
+            <label><input type="checkbox" name="pomoc" value="organizace"> rád/a pomůžu s organizací na místě</label>
             <label><input type="checkbox" name="pomoc" value="peceni"> rád/a upeču / uvařím něco</label>
           </div>
         </div>
@@ -856,6 +865,14 @@
       el.addEventListener('change', () => {
         document.getElementById('volna-mista-group').style.display =
           document.getElementById('auto-volna').checked ? 'block' : 'none';
+      });
+    });
+
+    // ── Help-detail toggle ────────────────────────────────────────────────
+    document.querySelectorAll('input[name="pomoc_zda"]').forEach(el => {
+      el.addEventListener('change', () => {
+        document.getElementById('pomoc-detail-group').style.display =
+          document.getElementById('pomoc-ano').checked ? 'block' : 'none';
       });
     });
 
