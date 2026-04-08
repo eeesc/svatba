@@ -655,7 +655,7 @@
   <!-- MISTA -->
   <div class="wrap" id="mista">
     <img class="section-title-img" src="menu_alpha/mista_title.png" alt="místa">
-    <p style="max-width:600px; margin:-1.2rem auto 2rem; text-align:justify; color:var(--mid); line-height:1.75;">Veselka bude probíhat v kempu v Sosni. Spát lze v čtyřmístných chatkách s palandami, v pokojích, na zemi ve společenské místnosti, ve vlastním stanu nebo pod širákem. Počet míst v pokojích a chatkách je nižší než počet svatebních hostů. Své preference ohledně noclehu nám dejte vědět pomocí svatebního formuláře níže. Pokud byste preferovali spaní mimo svatební veselí v klidnějším prostředí, v nedaleké obci Jesenice si lze zamluvit ubytování v penzionu.</p>
+    <p style="max-width:600px; margin:-1.2rem auto 2rem; text-align:justify; color:var(--mid); line-height:1.75;">Obřad bude probíhat v kostele svatého Bartoloměje ve Velké Chmelištní. Veselka bude probíhat v kempu v Sosni. Spát lze v čtyřmístných chatkách s palandami, v pokojích, na zemi ve společenské místnosti, ve vlastním stanu nebo pod širákem. Počet míst v pokojích a chatkách je nižší než počet svatebních hostů. Své preference ohledně noclehu nám dejte vědět pomocí svatebního formuláře níže. Pokud byste preferovali spaní mimo svatební veselí v klidnějším prostředí, v nedaleké obci Jesenice si lze zamluvit ubytování v penzionu.</p>
     <div class="maps-grid">
       <div class="map-card">
         <iframe src="https://mapy.com/s/hozogobele" title="Místo obřadu" loading="lazy"></iframe>
@@ -956,19 +956,26 @@
     const FLAP_MS = 280;   // matches CSS animation-duration (0.28 s)
     const sleep   = ms => new Promise(r => setTimeout(r, ms));
 
+    function pauseMoth(el) {
+      el.style.animationPlayState = 'paused';
+      // Explicitly snap back to frame 0 — setTimeout isn't precise enough
+      // to guarantee we land on the cycle boundary after sleep(2 * FLAP_MS).
+      el.style.backgroundPosition = '0 0';
+    }
+
     async function runMoth(el) {
+      pauseMoth(el);   // ensure clean frame on first load
       while (true) {
         // Long random pause — 5 to 12 seconds
-        const wait = 5000 + Math.random() * 7000;
-        el.style.animationPlayState = 'paused';
-        await sleep(wait);
+        await sleep(5000 + Math.random() * 7000);
 
         // Two quick flaps
+        el.style.backgroundPosition = '';   // let the animation drive position
         el.style.animationPlayState = 'running';
-        await sleep(2 * FLAP_MS);      // exactly 2 full cycles → back to frame 0
+        await sleep(2 * FLAP_MS);
 
-        // Stop on open-wing frame
-        el.style.animationPlayState = 'paused';
+        // Back to still — always land on frame 0
+        pauseMoth(el);
       }
     }
 
