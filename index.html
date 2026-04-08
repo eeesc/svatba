@@ -112,6 +112,8 @@
       padding: 0.6rem 1.5rem;
       background: #ffffff;
       border-bottom: 1px solid var(--grid);
+      overflow: hidden;         /* no horizontal scroll on the nav strip */
+      touch-action: pan-y;      /* block horizontal swipe gestures */
     }
 
     nav a {
@@ -121,6 +123,7 @@
       transition: background 0.2s;
       display: flex;
       align-items: center;
+      flex-shrink: 0;           /* never squish a nav item */
     }
 
     nav a:hover {
@@ -541,9 +544,11 @@
 
     /* ── RESPONSIVE ───────────────────────────────────── */
     @media (max-width: 620px) {
-      nav { gap: 0.1rem; padding: 0.3rem 0.5rem; }
-      nav a { padding: 0.1rem 0.15rem; }
-      .nav-img { height: 40px; }
+      nav { gap: 0.05rem; padding: 0.25rem 0.4rem; }
+      nav a { padding: 0.05rem 0.1rem; }
+      .nav-img { height: 32px; }
+
+      .section-title-img { height: 100px; }
 
       .hero-moth { display: none; }
 
