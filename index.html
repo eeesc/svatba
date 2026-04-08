@@ -891,6 +891,15 @@
   </footer>
 
   <script>
+    // ── Mailto — explicit JS navigation is more reliable on iOS Safari ────
+    const mailLink = document.querySelector('a.contact-email');
+    if (mailLink) {
+      mailLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = this.getAttribute('href');
+      });
+    }
+
     // ── Car-seats toggle ─────────────────────────────────────────────────
     document.querySelectorAll('input[name="auto"]').forEach(el => {
       el.addEventListener('change', () => {
