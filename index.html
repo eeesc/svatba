@@ -917,15 +917,15 @@
   <script>
     // ── Nav anchor scroll — land the section title image just below the nav ─
     const navEl = document.querySelector('nav');
+    // Set scroll-padding-top dynamically so scrollIntoView lands titles below the nav
+    document.documentElement.style.scrollPaddingTop = (navEl.offsetHeight + 16) + 'px';
     document.querySelectorAll('nav a[href^="#"]').forEach(link => {
       link.addEventListener('click', function(e) {
         const section = document.querySelector(this.getAttribute('href'));
         if (!section) return;
         e.preventDefault();
         const titleImg = section.querySelector('.section-title-img');
-        const anchor = titleImg || section;
-        const top = anchor.getBoundingClientRect().top + window.scrollY - navEl.offsetHeight - 16;
-        window.scrollTo({ top, behavior: 'smooth' });
+        (titleImg || section).scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
 
