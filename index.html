@@ -970,6 +970,11 @@
       launchMoths(btn);
       form.style.display = 'none';
       document.getElementById('form-success').style.display = 'block';
+      // scroll back to rsvp section — hiding the form shrinks the layout and
+      // the browser drifts downward without this
+      const rsvpTop = document.getElementById('rsvp').getBoundingClientRect().top
+                      + window.scrollY - navEl.offsetHeight - 8;
+      window.scrollTo({ top: rsvpTop, behavior: 'smooth' });
     });
 
     function launchMoths(fromEl) {
@@ -978,6 +983,11 @@
       const startY = rect.top  + rect.height / 2;
       const COUNT  = 15;
       const maxD   = Math.max(window.innerWidth, window.innerHeight);
+
+      // iOS Safari clips position:fixed children when body has overflow-x:hidden.
+      // Lift the restriction for the duration of the longest possible animation.
+      document.body.style.overflowX = 'visible';
+      setTimeout(() => { document.body.style.overflowX = ''; }, 2600);
 
       for (let i = 0; i < COUNT; i++) {
         const m = document.createElement('div');
