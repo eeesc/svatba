@@ -31,6 +31,7 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
       overscroll-behavior-x: none;
     }
 
@@ -933,6 +934,13 @@
         window.location.href = this.getAttribute('href');
       });
     }
+
+    // ── Block pinch-zoom on iOS (viewport user-scalable=no is ignored in iOS 10+)
+    document.addEventListener('touchmove', function(e) {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
 
     // ── Car-seats toggle ─────────────────────────────────────────────────
     document.querySelectorAll('input[name="auto"]').forEach(el => {
