@@ -31,8 +31,8 @@
 
     html {
       scroll-behavior: smooth;
-      overflow-x: hidden;
       overscroll-behavior-x: none;
+      scroll-padding-top: 80px;  /* clear the fixed nav — desktop (1 row) */
     }
 
     body {
@@ -203,7 +203,6 @@
     .wrap {
       max-width: 940px;
       margin: 0 auto;
-      scroll-margin-top: 90px;  /* clear the fixed nav on desktop */
       padding: 5rem 2rem;
     }
 
@@ -556,10 +555,10 @@
 
     /* ── RESPONSIVE ───────────────────────────────────── */
     @media (max-width: 620px) {
+      html { scroll-padding-top: 110px; } /* nav is 2 rows on small screens */
       nav { gap: 0.15rem; padding: 0.35rem 0.5rem; }
       nav a { padding: 0.05rem 0.15rem; }
       .nav-img { height: 40px; }
-      .wrap { scroll-margin-top: 110px; }
       .nav-rsvp   { margin-top: -18px; }
       .nav-dary   { margin-top: -6px; }
       .nav-kontakt { margin-top: -6px; }
