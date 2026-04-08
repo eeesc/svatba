@@ -970,11 +970,13 @@
       launchMoths(btn);
       form.style.display = 'none';
       document.getElementById('form-success').style.display = 'block';
-      // scroll back to rsvp section — hiding the form shrinks the layout and
-      // the browser drifts downward without this
-      const rsvpTop = document.getElementById('rsvp').getBoundingClientRect().top
-                      + window.scrollY - navEl.offsetHeight - 8;
-      window.scrollTo({ top: rsvpTop, behavior: 'smooth' });
+      // Recalculate position after layout shift, with a small delay so the
+      // iOS soft keyboard has time to dismiss before we scroll.
+      setTimeout(() => {
+        const rsvpTop = document.getElementById('rsvp').getBoundingClientRect().top
+                        + window.scrollY - navEl.offsetHeight - 8;
+        window.scrollTo({ top: rsvpTop, behavior: 'smooth' });
+      }, 120);
     });
 
     function launchMoths(fromEl) {
@@ -984,17 +986,15 @@
       const COUNT  = 15;
       const maxD   = Math.max(window.innerWidth, window.innerHeight);
 
-      // iOS Safari clips position:fixed children when body has overflow-x:hidden.
-      // Lift the restriction for the duration of the longest possible animation.
-      document.body.style.overflowX = 'visible';
-      setTimeout(() => { document.body.style.overflowX = ''; }, 2600);
-
+      // Append moths to <html> (documentElement), not <body>.
+      // body has overflow-x:hidden which iOS Safari uses to clip fixed children;
+      // html has no overflow constraint so the moths are never clipped.
       for (let i = 0; i < COUNT; i++) {
         const m = document.createElement('div');
         m.className  = 'moth-particle';
         m.style.left = startX + 'px';
         m.style.top  = startY + 'px';
-        document.body.appendChild(m);
+        document.documentElement.appendChild(m);
 
         const angle    = Math.random() * Math.PI * 2;
         const dist     = maxD * (0.65 + Math.random() * 0.35);
