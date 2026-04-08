@@ -915,6 +915,20 @@
   </footer>
 
   <script>
+    // ── Nav anchor scroll — land the section title image just below the nav ─
+    const navEl = document.querySelector('nav');
+    document.querySelectorAll('nav a[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const section = document.querySelector(this.getAttribute('href'));
+        if (!section) return;
+        e.preventDefault();
+        const titleImg = section.querySelector('.section-title-img');
+        const anchor = titleImg || section;
+        const top = anchor.getBoundingClientRect().top + window.scrollY - navEl.offsetHeight - 16;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    });
+
     // ── Mailto — explicit JS navigation is more reliable on iOS Safari ────
     const mailLink = document.querySelector('a.contact-email');
     if (mailLink) {
