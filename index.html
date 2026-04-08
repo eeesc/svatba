@@ -143,6 +143,9 @@
       filter: brightness(0.55);
     }
 
+    /* RSVP sits a bit lower than the other signs on desktop only */
+    .nav-rsvp { margin-top: -20px; }
+
     /* ── HERO ─────────────────────────────────────────── */
     .hero {
       min-height: 100vh;
@@ -544,9 +547,10 @@
 
     /* ── RESPONSIVE ───────────────────────────────────── */
     @media (max-width: 620px) {
-      nav { gap: 0.05rem; padding: 0.25rem 0.4rem; }
-      nav a { padding: 0.05rem 0.1rem; }
-      .nav-img { height: 32px; }
+      nav { gap: 0.15rem; padding: 0.35rem 0.5rem; }
+      nav a { padding: 0.05rem 0.15rem; }
+      .nav-img { height: 40px; }
+      .nav-rsvp { margin-top: 0; }   /* undo the desktop nudge on mobile */
 
       .section-title-img { height: 72px; }
 
@@ -566,7 +570,7 @@
     <a href="#mista"><img class="nav-img" src="menu_alpha/mista_nav.png" alt="místa"></a>
     <a href="#doprava"><img class="nav-img" src="menu_alpha/doprava_nav.png" alt="doprava"></a>
     <a href="#info" style="margin-top:-2px"><img class="nav-img" src="menu_alpha/cos_nav.png" alt="co s sebou"></a>
-    <a href="#rsvp" style="margin-top:-20px"><img class="nav-img" src="menu_alpha/rsvp_nav.png" alt="RSVP"></a>
+    <a href="#rsvp" class="nav-rsvp"><img class="nav-img" src="menu_alpha/rsvp_nav.png" alt="RSVP"></a>
     <a href="#dary"><img class="nav-img" src="menu_alpha/dary_nav.png" alt="dary"></a>
     <a href="#kontakt"><img class="nav-img" src="menu_alpha/kontakt_nav.png" alt="kontakty"></a>
   </nav>
