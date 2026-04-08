@@ -31,6 +31,7 @@
 
     html {
       scroll-behavior: smooth;
+      overscroll-behavior-x: none;  /* stop horizontal swipe at the root */
     }
 
     body {
@@ -40,6 +41,7 @@
       color: var(--dark);
       background-color: #ffffff;
       overflow-x: hidden;
+      overscroll-behavior-x: none;
     }
 
     /* Centre column grid strip — fixed, sits behind all content.
@@ -550,7 +552,7 @@
       nav { gap: 0.15rem; padding: 0.35rem 0.5rem; }
       nav a { padding: 0.05rem 0.15rem; }
       .nav-img { height: 40px; }
-      .nav-rsvp { margin-top: 0; }   /* undo the desktop nudge on mobile */
+      .nav-rsvp { margin-top: -8px; } /* gentler nudge on mobile */
 
       .section-title-img { height: 72px; }
 
