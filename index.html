@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Jonáš & Natálie — 13. 6. 2026</title>
   <!-- Google Analytics 4 — replace G-LGG7WZ05FT with your Measurement ID -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGG7WZ05FT"></script>
@@ -31,7 +31,8 @@
 
     html {
       scroll-behavior: smooth;
-      overscroll-behavior-x: none;  /* stop horizontal swipe at the root */
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
     }
 
     body {
@@ -558,10 +559,10 @@
       nav { gap: 0.15rem; padding: 0.35rem 0.5rem; }
       nav a { padding: 0.05rem 0.15rem; }
       .nav-img { height: 40px; }
-      .wrap { scroll-margin-top: 130px; } /* nav is 2 rows tall on mobile */
+      .wrap { scroll-margin-top: 110px; }
       .nav-rsvp   { margin-top: -18px; }
-      .nav-dary   { margin-top: -10px; }
-      .nav-kontakt { margin-top: -10px; }
+      .nav-dary   { margin-top: -6px; }
+      .nav-kontakt { margin-top: -6px; }
 
       .section-title-img { height: 72px; }
 
