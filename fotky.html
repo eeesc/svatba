@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fotky — Jonáš & Natálie</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #f7f5f1;
+      --amber:   #c07830;
+      --amber-d: #9e6020;
+      --blue:    #8faac8;
+      --dark:    #2c2825;
+      --mid:     #7a6e66;
+      --grid:    rgba(143,170,200,0.25);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      overscroll-behavior-x: none;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 1.08rem;
+      color: var(--dark);
+      background-color: #ffffff;
+      overflow-x: clip;
+      overscroll-behavior-x: none;
+      touch-action: pan-y;
+    }
+
+    /* Grid paper background strip */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(940px, 100vw);
+      z-index: -1;
+      background-image: url('pozadni_long_alpha.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: top center;
+    }
+
+    /* ── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      padding: 0.6rem 1.5rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--grid);
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .nav-back {
+      text-decoration: none;
+      color: var(--mid);
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--grid);
+      border-radius: 3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-back:hover { color: var(--amber); border-color: var(--amber); }
+
+    .nav-title {
+      font-size: 1rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--mid);
+    }
+
+    /* ── PAGE WRAP ───────────────────────────────────── */
+    .page {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 6rem 1.5rem 5rem;
+    }
+
+    .page-heading {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-heading img {
+      width: clamp(180px, 38vw, 420px);
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* ── MASONRY GRID ────────────────────────────────── */
+    .gallery {
+      columns: 3 220px;
+      column-gap: 0.75rem;
+    }
+
+    .gallery-item {
+      break-inside: avoid;
+      margin-bottom: 0.75rem;
+      cursor: zoom-in;
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--grid);
+      position: relative;
+    }
+
+    .gallery-item img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.03);
+      opacity: 0.92;
+    }
+
+    /* ── LIGHTBOX ────────────────────────────────────── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(44, 40, 37, 0.93);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      cursor: zoom-out;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 3px;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+      cursor: default;
+      object-fit: contain;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 1rem; right: 1.25rem;
+      color: rgba(255,255,255,0.7);
+      font-size: 2rem;
+      font-weight: 300;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+      z-index: 100000;
+    }
+    .lightbox-close:hover { color: #fff; }
+
+    .lightbox-prev,
+    .lightbox-next {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 2.5rem;
+      font-weight: 300;
+      cursor: pointer;
+      padding: 1rem;
+      transition: color 0.2s;
+      user-select: none;
+      z-index: 100000;
+    }
+    .lightbox-prev { left: 0.5rem; }
+    .lightbox-next { right: 0.5rem; }
+    .lightbox-prev:hover,
+    .lightbox-next:hover { color: #fff; }
+
+    .lightbox-counter {
+      position: fixed;
+      bottom: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.45);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 620px) {
+      .gallery { columns: 2 140px; }
+      .lightbox-prev { left: 0; }
+      .lightbox-next { right: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-back">← zpět</a>
+    <span class="nav-title">jonáš &amp; natálie · fotky</span>
+  </nav>
+
+  <div class="page">
+    <div class="page-heading">
+      <img src="jn_alpha.png" alt="jonáš & natálie">
+    </div>
+
+    <div class="gallery" id="gallery">
+      <div class="gallery-item"><img src="fotky/672c7dcf-fa2b-4abc-ab3e-3fd6674066fc.jpg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_1282.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_1885.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_2634.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_2781.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_3128.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_4745.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_5126.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_7014.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_8048.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_8049.jpeg" alt=""></div>
+      <div class="gallery-item"><img src="fotky/IMG_8704.jpeg" alt=""></div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <span class="lightbox-close" id="lb-close">×</span>
+    <span class="lightbox-prev" id="lb-prev">‹</span>
+    <img src="" id="lb-img" alt="">
+    <span class="lightbox-next" id="lb-next">›</span>
+    <span class="lightbox-counter" id="lb-counter"></span>
+  </div>
+
+  <script>
+    const items   = Array.from(document.querySelectorAll('.gallery-item img'));
+    const lb      = document.getElementById('lightbox');
+    const lbImg   = document.getElementById('lb-img');
+    const lbCount = document.getElementById('lb-counter');
+    let current   = 0;
+
+    function open(idx) {
+      current = (idx + items.length) % items.length;
+      lbImg.src = items[current].src;
+      lbCount.textContent = (current + 1) + ' / ' + items.length;
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    items.forEach((img, i) => img.parentElement.addEventListener('click', () => open(i)));
+
+    document.getElementById('lb-close').addEventListener('click', close);
+    document.getElementById('lb-prev').addEventListener('click', e => { e.stopPropagation(); open(current - 1); });
+    document.getElementById('lb-next').addEventListener('click', e => { e.stopPropagation(); open(current + 1); });
+    lb.addEventListener('click', function(e) { if (e.target === lb) close(); });
+
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'ArrowLeft')  open(current - 1);
+      if (e.key === 'ArrowRight') open(current + 1);
+      if (e.key === 'Escape')     close();
+    });
+
+    // Swipe support in lightbox
+    let swipeX = 0;
+    lbImg.addEventListener('touchstart', e => { swipeX = e.touches[0].clientX; }, { passive: true });
+    lbImg.addEventListener('touchend',   e => {
+      const dx = e.changedTouches[0].clientX - swipeX;
+      if (Math.abs(dx) > 40) dx < 0 ? open(current + 1) : open(current - 1);
+    });
+  </script>
+
+</body>
+</html>

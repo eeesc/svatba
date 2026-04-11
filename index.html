@@ -891,7 +891,7 @@
     <img class="section-title-img" src="menu_alpha/dary_title.png" alt="dary">
     <div class="gifts-body">
       <p>Největší radost nám uděláte, když si za námi přijedete.</p>
-      <p>Pokud byste nás i tak chtěli obdarovat, <b>nejvíc nás potěší příspěvek na svatební cestu na účet: xxxx</b></p>
+      <p>Pokud byste nás i tak chtěli obdarovat, <b>nejvíc nás potěší příspěvek na svatební cestu na účet: 1895560045/3030</b></p>
       <br></br>
       <p>Máte-li však nápad na konkrétní hmotný dar nebo zážitek, určitě se nebráníme, svou volbu můžete probrat s našími svědky Toníkem a Šimonem.</p>
     </div>
@@ -1054,20 +1054,52 @@
       el.style.animation = 'moth-flap 0.28s steps(20) infinite';
     }
 
-    async function runMoth(el) {
-      pauseMoth(el);   // ensure frame 0 on load
+    // ── Easter-egg: first moth becomes a secret link while flapping ─────
+    let secretTimer = null;
+    const secretMoth = document.querySelector('.moth-animated');
+
+    function setSecret(active) {
+      if (!secretMoth) return;
+      secretMoth.style.pointerEvents = active ? 'auto'   : 'none';
+      secretMoth.style.cursor        = active ? 'pointer': '';
+      secretMoth.style.filter        = active
+        ? 'drop-shadow(0 0 6px rgba(192,120,48,0.55))'
+        : '';
+    }
+
+    if (secretMoth) {
+      // pointer-events:none is on .moth-deco (parent); setting auto on the
+      // child is enough — CSS allows child to override parent's none.
+      secretMoth.addEventListener('click', () => {
+        window.location.href = 'fotky.html';
+      });
+    }
+
+    async function runMoth(el, isSecret) {
+      pauseMoth(el);
       while (true) {
         await sleep(5000 + Math.random() * 7000);
+
+        if (isSecret) {
+          clearTimeout(secretTimer);
+          setSecret(true);
+        }
+
         startMoth(el);
         await sleep(2 * FLAP_MS);
         pauseMoth(el);
+
+        if (isSecret) {
+          // stay clickable 1 s after flapping stops, then hide
+          secretTimer = setTimeout(() => setSecret(false), 1000);
+        }
       }
     }
 
     // Stagger so the two moths never flap simultaneously
     document.querySelectorAll('.moth-animated').forEach((el, i) => {
       const jitter = i * 3500 + Math.random() * 2000;
-      setTimeout(() => runMoth(el), jitter);
+      setTimeout(() => runMoth(el, i === 0), jitter);
     });
   </script>
 
