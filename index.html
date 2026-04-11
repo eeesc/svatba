@@ -541,6 +541,13 @@
       z-index: 2;
     }
 
+    .contact-email-witness {
+      color: var(--amber);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .contact-email-witness:hover { text-decoration: underline; }
+
     .contact-email:hover { text-decoration: underline; }
 
     .contact-witnesses {
@@ -904,7 +911,7 @@
       <p style="margin-top:1rem; max-width:520px; margin-left:auto; margin-right:auto;">Vaše zvídavé dotazy zodpovíme my, nebo organizátorka Anežka, na kterou se budete moct obrátit i během svatebního víkendu.</p>
       <br>
       <a href="mailto:jonas.a.natalka@gmail.com" class="contact-email">jonas.a.natalka@gmail.com</a>
-      <p class="contact-witnesses">nebo se obraťte na svědky — Toníka a Šimona</p>
+      <p class="contact-witnesses">nebo se obraťte na svědky — <a href="mailto:antonin.vydra@gmail.com" class="contact-email-witness">Toníka</a> a <a href="mailto:kucharssim@gmail.com" class="contact-email-witness">Šimona</a></p>
     </div>
   </div>
 
@@ -930,13 +937,12 @@
     });
 
     // ── Mailto — explicit JS navigation is more reliable on iOS Safari ────
-    const mailLink = document.querySelector('a.contact-email');
-    if (mailLink) {
-      mailLink.addEventListener('click', function(e) {
+    document.querySelectorAll('a[href^="mailto:"]').forEach(function(link) {
+      link.addEventListener('click', function(e) {
         e.preventDefault();
         window.location.href = this.getAttribute('href');
       });
-    }
+    });
 
     // ── Block horizontal swipe + pinch-zoom ──────────────────────────────
     let _tx = 0, _ty = 0;
