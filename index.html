@@ -41,8 +41,9 @@
       font-size: 1.08rem;
       color: var(--dark);
       background-color: #ffffff;
-      overflow-x: hidden;
+      overflow-x: clip;        /* clip ≠ hidden: no scroll container, nothing to swipe */
       overscroll-behavior-x: none;
+      touch-action: pan-y;     /* CSS-level: only allow vertical panning */
     }
 
     /* Centre column grid strip — fixed, sits behind all content.
@@ -937,11 +938,19 @@
       });
     }
 
-    // ── Block pinch-zoom on iOS (viewport user-scalable=no is ignored in iOS 10+)
+    // ── Block horizontal swipe + pinch-zoom ──────────────────────────────
+    let _tx = 0, _ty = 0;
+    document.addEventListener('touchstart', function(e) {
+      _tx = e.touches[0].clientX;
+      _ty = e.touches[0].clientY;
+    }, { passive: true });
     document.addEventListener('touchmove', function(e) {
-      if (e.touches && e.touches.length > 1) e.preventDefault();
+      if (e.touches.length > 1) { e.preventDefault(); return; }  // pinch
+      const dx = Math.abs(e.touches[0].clientX - _tx);
+      const dy = Math.abs(e.touches[0].clientY - _ty);
+      if (dx > dy) e.preventDefault();  // horizontal swipe
     }, { passive: false });
-    document.addEventListener('gesturestart', function(e) { e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturestart',  function(e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
 
     // ── Car-seats toggle ─────────────────────────────────────────────────
