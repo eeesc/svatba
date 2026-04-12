@@ -215,7 +215,7 @@
     }
 
     /* RSVP sits a bit lower than the other signs on desktop only */
-    .nav-rsvp { margin-top: -2px; }
+    .nav-rsvp { margin-top: 0px; }
 
     /* ── HERO ─────────────────────────────────────────── */
     .hero {
@@ -819,6 +819,8 @@
         Thank you so much! We cannot wait to see you ♡
       </div>
       <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbxyuzTm1ebWrBcIJv84vRT6w7bsKs6ORkDg0mcAigCPbqaoGXUQaiooWLXUNAkyeQIcYQ/exec" method="POST">
+        <!-- Sent as POST field form_locale — add a column / e.parameter.form_locale in Apps Script -->
+        <input type="hidden" name="form_locale" value="en">
 
         <div class="form-group">
           <label>Please send your reply by the end of April.</label>
