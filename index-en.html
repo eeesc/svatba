@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Jonáš & Natálie — June 13, 2026</title>
+  <!-- Google Analytics — enable when ready -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGG7WZ05FT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LGG7WZ05FT');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #f7f5f1;
+      --amber:   #c07830;
+      --amber-d: #9e6020;
+      --blue:    #8faac8;
+      --dark:    #2c2825;
+      --mid:     #7a6e66;
+      --light:   rgba(255,255,255,0.75);
+      --grid:    rgba(143,170,200,0.25);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overscroll-behavior-x: none;
+      scroll-padding-top: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 1.08rem;
+      color: var(--dark);
+      background-color: #ffffff;
+      overflow-x: clip;        /* clip ≠ hidden: no scroll container, nothing to swipe */
+      overscroll-behavior-x: none;
+      touch-action: pan-y;     /* CSS-level: only allow vertical panning */
+    }
+
+    /* Centre column grid strip — fixed, sits behind all content.
+       Width tracks the content column (.wrap max-width 940px) so it
+       aligns on every screen size. */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(940px, 100vw);
+      z-index: -1;
+      background-image: url('pozadni_long_alpha.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: top center;
+    }
+
+    /* All content sections need relative positioning for moth overlays */
+    .wrap { position: relative; }
+
+    /* Scattered moth decorations */
+    .moth-deco {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      z-index: 1;
+    }
+    .moth-deco img {
+      display: block;
+      max-width: none;
+    }
+    /* clip helpers for showing only one moth from the pair image */
+    .moth-clip-top  img { clip-path: inset(0 0 62% 0); }
+    .moth-clip-bot  img { clip-path: inset(60% 0 0 0); }
+
+    /*
+      Animated moth sprite — 20 frames × 360px = 7200 × 258 px
+      Displayed at 180 × 129 px  →  background-size = 20 × 180 = 3600 px
+      JS controls play/pause; CSS just defines one flap cycle.
+    */
+    .moth-animated {
+      display: block;
+      width: 180px;
+      height: 168px;
+      background-image: url('moth_sprite.png');
+      background-repeat: no-repeat;
+      background-size: 3600px auto;
+      background-position: 0 0;
+      animation: moth-flap 0.28s steps(20) infinite;
+      animation-play-state: paused;
+    }
+
+    @keyframes moth-flap {
+      to { background-position: -3600px 0; }
+    }
+
+    /* Particle moths — 48 px wide, sprite scaled to 960 px */
+    @keyframes moth-particle-flap {
+      to { background-position: -960px 0; }
+    }
+
+    .moth-particle {
+      position: fixed;
+      width: 48px;
+      height: 34px;
+      background-image: url('moth_sprite.png');
+      background-repeat: no-repeat;
+      background-size: 960px auto;
+      background-position: 0 0;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      animation: moth-particle-flap 0.18s steps(20) infinite;
+    }
+
+
+    /* ── NAV ──────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      padding: 0.6rem 1.5rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--grid);
+      overflow: hidden;         /* no horizontal scroll on the nav strip */
+      touch-action: pan-y;      /* block horizontal swipe gestures */
+    }
+
+    nav a {
+      text-decoration: none;
+      padding: 0.15rem 0.3rem;
+      border-radius: 2px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;           /* never squish a nav item */
+    }
+
+    nav a:hover {
+      background: rgba(192,120,48,0.08);
+    }
+
+    /* All nav images: 200px canvas, displayed at 56px — body zone centred, nothing clipped */
+    .nav-img {
+      display: block;
+      height: 56px;
+      width: auto;
+      flex-shrink: 0;
+      transition: filter 0.2s;
+    }
+
+    nav a:hover .nav-img {
+      filter: brightness(0.55);
+    }
+
+    /* English page: text nav (replaces Czech handwritten PNGs) */
+    .nav-link-text {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mid);
+      padding: 0.35rem 0.45rem;
+      border-radius: 2px;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+      line-height: 1.2;
+      text-align: center;
+    }
+    nav a:hover .nav-link-text {
+      color: var(--amber-d);
+      background: rgba(192,120,48,0.08);
+    }
+
+    .section-title-text {
+      display: block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(1.6rem, 4.2vw, 2.1rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--dark);
+      text-align: center;
+      margin: 0 auto 2.5rem;
+      line-height: 1.25;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-date-text {
+      font-size: clamp(1.05rem, 2.8vw, 1.5rem);
+      font-weight: 400;
+      color: var(--amber);
+      margin: 0.5rem 0 0.25rem;
+      letter-spacing: 0.04em;
+    }
+    .hero-venue-text {
+      font-size: clamp(0.95rem, 2.2vw, 1.25rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--mid);
+      margin-top: 0.25rem;
+    }
+
+    /* RSVP sits a bit lower than the other signs on desktop only */
+    .nav-rsvp { margin-top: -20px; }
+
+    /* ── HERO ─────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Handwritten hero images — grey ink baked into the PNG */
+    .hero-title {
+      width: clamp(220px, 44vw, 500px);
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-img {
+      width: clamp(160px, 28vw, 320px);
+      margin: 0.6rem 0;
+      filter: drop-shadow(0 16px 32px rgba(0,0,0,0.08));
+    }
+
+    .hero-date {
+      width: clamp(70px, 12vw, 150px);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-venue {
+      width: clamp(120px, 23vw, 260px);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: var(--blue);
+      opacity: 0.7;
+      animation: bob 2s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%        { transform: translateX(-50%) translateY(6px); }
+    }
+
+    /* ── SECTION SHELL ────────────────────────────────── */
+    .wrap {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    .wrap + .wrap {
+      border-top: 1px solid var(--grid);
+    }
+
+    /* Handwritten section heading images — 520px canvas, displayed at 160px */
+    .section-title-img {
+      display: block;
+      height: 160px;
+      width: auto;
+      max-width: 100%;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* ── MOTH DIVIDER ─────────────────────────────────── */
+    .moth-divider {
+      display: flex;
+      justify-content: center;
+      margin: 2.5rem 0 0;
+    }
+    .moth-divider img {
+      width: 72px;
+      opacity: 0.28;
+    }
+
+    /* ── TIMELINE ─────────────────────────────────────── */
+    .timeline {
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .tl-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 1.5rem;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid var(--grid);
+      align-items: start;
+    }
+    .tl-item:last-child { border-bottom: none; }
+
+    .tl-day {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      padding: 1.4rem 0 0.5rem;
+      border-bottom: 1px solid var(--grid);
+    }
+    .tl-day:first-child { padding-top: 0; }
+
+    .tl-time {
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--amber);
+      text-align: right;
+      padding-top: 0.1rem;
+    }
+
+    .tl-body strong {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--dark);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .tl-body p {
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--mid);
+    }
+
+    /* ── MAPS ─────────────────────────────────────────── */
+    .maps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .map-card {
+      background: white;
+      border-radius: 3px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+
+    .map-card iframe {
+      display: block;
+      width: 100%;
+      height: 210px;
+      border: none;
+    }
+
+    .map-label {
+      font-size: 1.05rem;
+      font-weight: 400;
+      padding: 0.75rem 1rem;
+      color: var(--mid);
+      border-top: 1px solid rgba(143,170,200,0.2);
+    }
+
+    /* ── TRANSPORT ────────────────────────────────────── */
+    .transport-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .transport-card {
+      background: var(--light);
+      border: 1px solid var(--grid);
+      border-radius: 3px;
+      padding: 1.5rem;
+    }
+
+    .transport-card h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--amber);
+      margin-bottom: 0.65rem;
+    }
+
+    .transport-card p {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--mid);
+    }
+
+    /* ── GIFTS ────────────────────────────────────────── */
+    .gifts-body {
+      max-width: 560px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .gifts-body p {
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--mid);
+    }
+
+    .gifts-highlight {
+      font-size: 1.45rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--amber);
+      display: block;
+      margin: 1.25rem 0;
+      line-height: 1.4;
+    }
+
+    /* ── INFO LIST ────────────────────────────────────── */
+    .info-list {
+      max-width: 600px;
+      margin: 0 auto;
+      list-style: none;
+    }
+
+    .info-list li {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--grid);
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: var(--mid);
+    }
+
+    .info-list li:last-child { border-bottom: none; }
+
+    .info-list li::before {
+      content: '—';
+      color: var(--blue);
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+
+    /* ── FORM ─────────────────────────────────────────── */
+    .form-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--light);
+      border: 1px solid var(--grid);
+      border-radius: 4px;
+      padding: 2.5rem;
+    }
+
+    .form-group { margin-bottom: 1.5rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 0.35rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid rgba(143,170,200,0.5);
+      border-radius: 2px;
+      background: rgba(247,245,241,0.9);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 1rem;
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--amber);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .radio-group,
+    .check-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: 0.3rem 0;
+    }
+
+    .radio-group label,
+    .check-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+      color: var(--mid);
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .radio-group input,
+    .check-group input {
+      width: auto;
+      accent-color: var(--amber);
+      flex-shrink: 0;
+    }
+
+    .field-note {
+      font-size: 0.82rem;
+      color: var(--blue);
+      margin-top: 0.3rem;
+    }
+
+    .btn-submit {
+      display: block;
+      width: 100%;
+      margin-top: 2rem;
+      padding: 0.9rem 1rem;
+      background: var(--amber);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-submit:hover {
+      background: var(--amber-d);
+      transform: translateY(-1px);
+    }
+
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      font-size: 1.4rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    /* ── CONTACT ──────────────────────────────────────── */
+    .contact-body {
+      text-align: center;
+      color: var(--mid);
+      position: relative;
+      z-index: 2;
+    }
+
+    .contact-body p {
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .contact-email {
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: var(--amber);
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .contact-email-witness {
+      color: var(--amber);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .contact-email-witness:hover { text-decoration: underline; }
+
+    .contact-email:hover { text-decoration: underline; }
+
+    .contact-witnesses {
+      margin-top: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--mid);
+    }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--grid);
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    footer p {
+      font-size: 1.05rem;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--mid);
+    }
+
+    .footer-moth {
+      position: absolute;
+      right: 4%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width: 620px) {
+
+      nav { gap: 0.15rem; padding: 0.35rem 0.5rem; }
+      nav a { padding: 0.05rem 0.15rem; }
+      .nav-img { height: 40px; }
+      .nav-rsvp   { margin-top: -18px; }
+      .nav-dary   { margin-top: -6px; }
+      .nav-kontakt { margin-top: -6px; }
+
+      .section-title-img { height: 72px; }
+      .section-title-text { font-size: clamp(1.35rem, 5vw, 1.75rem); margin-bottom: 1.75rem; }
+      .nav-link-text { font-size: 0.52rem; padding: 0.25rem 0.3rem; }
+
+      .hero-moth { display: none; }
+
+      .form-row { grid-template-columns: 1fr; }
+      .form-wrap { padding: 1.5rem; }
+
+      .footer-moth { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#program"><span class="nav-link-text">Program</span></a>
+    <a href="#venues"><span class="nav-link-text">Venues</span></a>
+    <a href="#travel"><span class="nav-link-text">Travel</span></a>
+    <a href="#info" style="margin-top:-2px"><span class="nav-link-text">What to bring</span></a>
+    <a href="#rsvp" class="nav-rsvp"><span class="nav-link-text">RSVP</span></a>
+    <a href="#gifts" class="nav-dary"><span class="nav-link-text">Gifts</span></a>
+    <a href="#contact" class="nav-kontakt"><span class="nav-link-text">Contact</span></a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <img class="hero-title" src="jn_alpha.png" alt="Jonáš and Natálie">
+    <img class="hero-img" src="mury_na_pivu_alpha.png" alt="Jonáš and Natálie — moths on a pint">
+    <p class="hero-date-text">June 13, 2026</p>
+    <p class="hero-venue-text">Velká Chmelištná</p>
+    <span class="hero-scroll">↓</span>
+  </section>
+
+  <!-- PROGRAM -->
+  <div class="wrap" id="program">
+    <!-- mura animace -->
+    <div class="moth-deco"
+         style="top:-30px; right:-110px; transform:rotate(-14deg) scaleX(-1);">
+      <div class="moth-animated" style="opacity:.45;"></div>
+    </div>
+    <h2 class="section-title-text">Program</h2>
+    <div class="timeline">
+      <div class="tl-day">Saturday, June 13</div>
+      <div class="tl-item">
+        <span class="tl-time">12:00</span>
+        <div class="tl-body">
+          <strong>Ceremony</strong>
+          <p>Church of St. Bartholomew, Velká Chmelištná</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">after the ceremony</span>
+        <div class="tl-body">
+          <strong>Gathering on the village green and in the woods</strong>
+          <p>Refreshments on the green, group photos, then a walk together to the campsite
+            (five kilometres along field and forest paths)</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">afternoon &amp; evening</span>
+        <div class="tl-body">
+          <strong>Reception</strong>
+          <p>Wedding party at the campsite</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">late night</span>
+        <div class="tl-body">
+          <strong>Bonfire</strong>
+          <p>Marshmallows, guitars, stars, beer, songs</p>
+        </div>
+      </div>
+      <div class="tl-day">Sunday, June 14</div>
+      <div class="tl-item">
+        <span class="tl-time">morning</span>
+        <div class="tl-body">
+          <strong>Breakfast</strong>
+          <p>Packing, tidying, goodbyes</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <span class="tl-time">afternoon</span>
+        <div class="tl-body">
+          <strong>Departure</strong>
+          <p>Clearing the site — please leave by 1:00 p.m.</p>
+        </div>
+      </div>
+    </div>
+    <div class="moth-divider"><img src="mura_1_alpha.png" alt="" style="transform:scaleX(-1);"></div>
+  </div>
+
+  <!-- MISTA -->
+  <div class="wrap" id="venues">
+    <h2 class="section-title-text">Venues</h2>
+    <p style="max-width:600px; margin:-1.2rem auto 2rem; text-align:justify; color:var(--mid); line-height:1.75;">The ceremony will be at the Church of St. Bartholomew in Velká Chmelištná. The reception is at the campsite in Soseň. You can sleep in four-bed cabins with bunk beds, in rooms, on the floor of the common room, in your own tent, or under the stars. There are fewer beds in rooms and cabins than there are guests — please tell us your preferences in the RSVP form below. If you would rather sleep away from the wedding hubbub in a quieter spot, you can book a guesthouse in nearby Jesenice.</p>
+    <div class="maps-grid">
+      <div class="map-card">
+        <iframe src="https://mapy.com/s/hozogobele" title="Ceremony location" loading="lazy"></iframe>
+        <p class="map-label">Ceremony</p>
+      </div>
+      <div class="map-card">
+        <iframe src="https://mapy.com/s/katemafemo" title="Party and campsite" loading="lazy"></iframe>
+        <p class="map-label">Party &amp; campsite</p>
+      </div>
+      <div class="map-card">
+        <iframe src="https://mapy.com/s/busadetova" title="Walk route" loading="lazy"></iframe>
+        <p class="map-label">Walk route</p>
+      </div>
+    </div>
+    <div class="moth-divider"><img src="mura_1_alpha.png" alt=""></div>
+  </div>
+
+  <!-- DOPRAVA -->
+  <div class="wrap" id="travel">
+    <!-- dve mury zleva-->
+    <div class="moth-deco" style="top:10px; left:-150px; transform:rotate(22deg);">
+      <img src="mura_1_alpha.png" alt="" width="180" style="opacity:.38;">
+    </div>
+    <div class="moth-deco" style="top:100px; left:-120px; transform:rotate(15deg) scaleX(-1);">
+      <img src="mura_2_alpha.png" alt="" width="140" style="opacity:.32;">
+    </div>
+    <h2 class="section-title-text">Travel</h2>
+    <div class="transport-grid">
+      <div class="transport-card">
+        <h3>Getting there</h3>
+        <p>The village is not far from Prague, but public transport is limited. We are arranging a coach from Rakovník leaving at 11:00 (connecting with R24 trains: 9:00 from Masaryk station and line T7, 9:07 from the main station). If you are driving, please let us know in advance and offer spare seats if you can.</p>
+      </div>
+      <div class="transport-card">
+        <h3>Group bike ride</h3>
+        <p>On Friday, June 12, we are organising a group ride from Prague. You can join in Prague or along the way — for example in Rakovník. Tick the box in the form if you are interested and we will follow up.</p>
+      </div>
+      <div class="transport-card">
+        <h3>Parking — Chmelištná</h3>
+        <p>You can park by the crossroads in the village, near the municipal office, and in the garden behind our cottage. Everything will be signed on the day.</p>
+      </div>
+      <div class="transport-card">
+        <h3>Parking — Soseň</h3>
+        <p>You can park in the campsite, but space is limited. Please register your car in advance. If the car park is full, you can park in Velká Chmelištná.</p>
+      </div>
+      <div class="transport-card">
+        <h3>Between venues</h3>
+        <p>The ceremony and the party are in different places. A big part of the day is the walk together, but there will also be a shuttle that can carry luggage or give you a lift if you need it.</p>
+      </div>
+      <div class="transport-card">
+        <h3>Leaving</h3>
+        <p>We need to vacate the campsite by 1:00 p.m. There is no organised group transport back; from Oráčov station (3 km on foot) trains to Prague leave at 8:46, 9:33, 10:45 (direct), 11:32, 12:42, 13:34, 14:45, 15:31 and later.</p>
+      </div>
+    </div>
+    <div class="moth-divider"><img src="mura_2_alpha.png" alt=""></div>
+  </div>
+
+  <!-- INFO -->
+  <div class="wrap" id="info">
+    <div class="moth-deco" style="top:-60px; left:-100px; transform:rotate(8deg);">
+      <img src="mura_1_alpha.png" alt="" width="160" style="opacity:.4;">
+    </div>
+    <h2 class="section-title-text">What to bring</h2>
+    <ul class="info-list">
+      <li>Dressy but comfortable clothes: the ceremony is in church and most of the celebration is outdoors. Wear something that feels good, easy, and appropriately festive — think forest casual.</li>
+      <li>Sturdy, comfortable shoes for a five-kilometre walk.</li>
+      <li>If you play an instrument, bring it — we will light a fire at the campsite and there will be time to play and sing (Hudson River shanties especially welcome).</li>
+      <li>We would love it if you brought a favourite wedding photo (yours, family, or friends). We hope to display them outside — please bring a copy in case of weather damage.</li>
+      <li>Sleeping bag and mat if you are sleeping in a tent, under the stars, or on the floor of the common room.</li>
+    </ul>
+    <div class="moth-divider"><img src="mura_1_alpha.png" alt=""></div>
+  </div>
+
+  <!-- RSVP -->
+  <div class="wrap" id="rsvp">
+    <!-- mura pravotociva -->
+    <div class="moth-deco"
+         style="top:20px; right:-115px; transform:rotate(10deg);">
+      <div class="moth-animated" style="opacity:.43;"></div>
+    </div>
+    <h2 class="section-title-text">RSVP</h2>
+    <div class="form-wrap">
+      <div class="form-success" id="form-success">
+        Thank you so much! We cannot wait to see you ♡
+      </div>
+      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbxyuzTm1ebWrBcIJv84vRT6w7bsKs6ORkDg0mcAigCPbqaoGXUQaiooWLXUNAkyeQIcYQ/exec" method="POST">
+
+        <div class="form-group">
+          <label>Please send your reply by the end of April.</label>
+          <br>
+          <label>Your name(s) *</label>
+          <input type="text" name="jmeno" required placeholder="Jane, Peter…">
+        </div>
+
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" required placeholder="you@email.com">
+          <p class="field-note">We will send a confirmation and any updates.</p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>How many adults?</label>
+            <select name="pocet_lidi">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>How many children?</label>
+            <select name="pocet_deti">
+              <option value="0" selected>0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="4+">5 or more</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>When will you arrive?</label>
+          <input type="text" name="prijezd" placeholder="Saturday before the ceremony, Saturday evening, etc.">
+        </div>
+
+        <div class="form-group">
+          <label>You will join us for…</label>
+          <div class="radio-group">
+            <label><input type="radio" name="ucast" value="obrad_i_party" checked> ceremony and reception</label>
+            <label><input type="radio" name="ucast" value="jen_obrad"> ceremony only</label>
+            <label><input type="radio" name="ucast" value="jen_party"> reception only</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>How will you travel?</label>
+          <div class="radio-group">
+            <label><input type="radio" name="auto" value="auto_volna" id="auto-volna"> by car — I have spare seats (details below)</label>
+            <label><input type="radio" name="auto" value="auto_plne"> by car — full</label>
+            <label><input type="radio" name="auto" value="vlastni_osa"> other / not by car</label>
+            <label><input type="radio" name="auto" value="autobus_rakovnik"> shared coach from Rakovník</label>
+            <label><input type="radio" name="auto" value="cyklojizda"> group bike ride</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="volna-mista-group" style="display:none">
+          <label>How many spare seats?</label>
+          <select name="volna_mista">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4+">4 or more</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Dietary restrictions</label>
+          <textarea name="jidlo" rows="3" placeholder="Mushrooms, meat, gluten-free, vegan, nut allergy…"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Sleeping</label>
+          <div class="check-group">
+            <label><input type="checkbox" name="spani" value="stan"> I will bring a tent</label>
+            <label><input type="checkbox" name="spani" value="mistnost"> common room — floor</label>
+            <label><input type="checkbox" name="spani" value="chatka"> please a bed in a room or cabin</label>
+            <label><input type="checkbox" name="spani" value="odjizd"> not staying overnight</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Help with preparations</label>
+          <div class="radio-group">
+            <label><input type="radio" name="pomoc_zda" value="ano" id="pomoc-ano"> yes, happy to help</label>
+            <label><input type="radio" name="pomoc_zda" value="ne"> no — I will help by consuming</label>
+          </div>
+        </div>
+
+        <div class="form-group" id="pomoc-detail-group" style="display:none">
+          <label>I can help with</label>
+          <div class="check-group">
+            <label><input type="checkbox" name="pomoc" value="pripravy_predem"> prep beforehand</label>
+            <label><input type="checkbox" name="pomoc" value="organizace"> on-site coordination</label>
+            <label><input type="checkbox" name="pomoc" value="peceni"> baking / cooking something</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Questions, ideas, notes: </label>
+          <textarea name="poznamka" rows="3" placeholder="…"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Send ♡</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DARY -->
+  <div class="wrap" id="gifts">
+    <div class="moth-deco" style="bottom:-90px; right:-90px; transform:rotate(-18deg) scaleX(-1);">
+      <img src="mura_2_alpha.png" alt="" width="170" style="opacity:.45;">
+    </div>
+    <h2 class="section-title-text">Gifts</h2>
+    <div class="gifts-body">
+      <p>The greatest gift is having you there with us.</p>
+      <p>If you would like to give something, <b>a contribution toward our honeymoon would mean the most — account: 1895560045/3030</b></p>
+      <div style="text-align:center; margin: 1.25rem 0;">
+        <img src="QR_kod.png" alt="QR code — account 1895560045/3030" style="width:180px; height:180px; display:inline-block;">
+      </div>
+      <p>If you have a specific physical gift or experience in mind, we are open to that too — talk it through with our witnesses Antonín and Šimon.</p>
+    </div>
+  </div>
+
+  <!-- KONTAKT -->
+  <div class="wrap" id="contact">
+    <div class="moth-deco" style="bottom:-110px; left:-130px; transform:rotate(-8deg) scaleX(-1);">
+      <img src="mura_1_alpha.png" alt="" width="180" style="opacity:.35;">
+    </div>
+    <div class="moth-deco" style="bottom:-60px; left:-80px; transform:rotate(5deg);">
+      <img src="mura_2_alpha.png" alt="" width="130" style="opacity:.28;">
+    </div>
+    <h2 class="section-title-text">Contact</h2>
+    <div class="contact-body">
+      <p>Questions? Write to us!</p>
+      <p style="margin-top:1rem; max-width:520px; margin-left:auto; margin-right:auto;">We will answer, or our coordinator Anežka will — you can reach her during the wedding weekend too.</p>
+      <br>
+      <a href="mailto:jonas.a.natalka@gmail.com" class="contact-email">jonas.a.natalka@gmail.com</a>
+      <p class="contact-witnesses">or the witnesses — <a href="mailto:antonin.vydra@gmail.com" class="contact-email-witness">Antonín</a> and <a href="mailto:kucharssim@gmail.com" class="contact-email-witness">Šimon</a></p>
+    </div>
+  </div>
+
+  <!-- ZAHLAVI -->
+  <footer>
+    <p>Jonáš &amp; Natálie &nbsp;·&nbsp; June 13, 2026 &nbsp;·&nbsp; Velká Chmelištná</p>
+    <img class="footer-moth" src="mura_2_alpha.png" alt="">
+  </footer>
+
+  <script>
+    // ── Nav anchor scroll — land the section title image just below the nav ─
+    const navEl = document.querySelector('nav');
+    // Set scroll-padding-top dynamically so scrollIntoView lands titles below the nav
+    document.documentElement.style.scrollPaddingTop = (navEl.offsetHeight + 16) + 'px';
+    document.querySelectorAll('nav a[href^="#"]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const section = document.querySelector(this.getAttribute('href'));
+        if (!section) return;
+        e.preventDefault();
+        const titleImg = section.querySelector('.section-title-img, .section-title-text');
+        (titleImg || section).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── Mailto — explicit JS navigation is more reliable on iOS Safari ────
+    document.querySelectorAll('a[href^="mailto:"]').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = this.getAttribute('href');
+      });
+    });
+
+    // ── Block horizontal swipe + pinch-zoom ──────────────────────────────
+    let _tx = 0, _ty = 0;
+    document.addEventListener('touchstart', function(e) {
+      _tx = e.touches[0].clientX;
+      _ty = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (e.touches.length > 1) { e.preventDefault(); return; }  // pinch
+      const dx = Math.abs(e.touches[0].clientX - _tx);
+      const dy = Math.abs(e.touches[0].clientY - _ty);
+      if (dx > dy) e.preventDefault();  // horizontal swipe
+    }, { passive: false });
+    document.addEventListener('gesturestart',  function(e) { e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
+
+    // ── Car-seats toggle ─────────────────────────────────────────────────
+    document.querySelectorAll('input[name="auto"]').forEach(el => {
+      el.addEventListener('change', () => {
+        document.getElementById('volna-mista-group').style.display =
+          document.getElementById('auto-volna').checked ? 'block' : 'none';
+      });
+    });
+
+    // ── Help-detail toggle ────────────────────────────────────────────────
+    document.querySelectorAll('input[name="pomoc_zda"]').forEach(el => {
+      el.addEventListener('change', () => {
+        document.getElementById('pomoc-detail-group').style.display =
+          document.getElementById('pomoc-ano').checked ? 'block' : 'none';
+      });
+    });
+
+    // ── Google Apps Script submit ─────────────────────────────────────────
+    // Apps Script redirects prevent reading the response, so we use no-cors
+    // and optimistically show the success message after sending.
+    const form = document.getElementById('rsvp-form');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = form.querySelector('.btn-submit');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        await fetch(form.action, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: new URLSearchParams(new FormData(form))
+        });
+      } catch (_) {}
+      // capture position BEFORE hiding the form
+      launchMoths(btn);
+      form.style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+      // Small delay so the iOS soft keyboard has time to dismiss before we scroll.
+      setTimeout(() => {
+        document.getElementById('rsvp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+    });
+
+    function launchMoths(fromEl) {
+      const rect  = fromEl.getBoundingClientRect();
+      const startX = rect.left + rect.width  / 2;
+      const startY = rect.top  + rect.height / 2;
+      const COUNT  = 15;
+      const maxD   = Math.max(window.innerWidth, window.innerHeight);
+
+      // Append moths to <html> (documentElement), not <body>.
+      // body has overflow-x:hidden which iOS Safari uses to clip fixed children;
+      // html has no overflow constraint so the moths are never clipped.
+      for (let i = 0; i < COUNT; i++) {
+        const m = document.createElement('div');
+        m.className  = 'moth-particle';
+        m.style.left = startX + 'px';
+        m.style.top  = startY + 'px';
+        document.documentElement.appendChild(m);
+
+        const angle    = Math.random() * Math.PI * 2;
+        const dist     = maxD * (0.65 + Math.random() * 0.35);
+        const dx       = Math.cos(angle) * dist;
+        const dy       = Math.sin(angle) * dist;
+        const spin     = (Math.random() - 0.5) * 480;
+        const duration = 1100 + Math.random() * 700;
+        const delay    = i * 40 + Math.random() * 60;
+
+        const anim = m.animate([
+          { transform: `translate(-50%,-50%) rotate(0deg)`,                                                  opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(${spin}deg)`, opacity: 0 }
+        ], { duration, delay, easing: 'ease-out', fill: 'forwards' });
+
+        anim.onfinish = () => m.remove();
+      }
+    }
+
+    // ── Moth wing-flap sequencer ─────────────────────────────────────────
+    // Each moth is still most of the time.
+    // Every 5–12 s it quickly flaps twice, then goes still again.
+    const FLAP_MS = 280;   // matches CSS animation-duration (0.28 s)
+    const sleep   = ms => new Promise(r => setTimeout(r, ms));
+
+    function pauseMoth(el) {
+      // Remove the animation entirely so the inline background-position wins.
+      // animation-play-state:paused keeps the animated value active and
+      // overrides inline styles, so we can't use it to reset the frame.
+      el.style.animation = 'none';
+      el.style.backgroundPosition = '0 0';
+    }
+
+    function startMoth(el) {
+      el.style.backgroundPosition = '';
+      el.style.animation = 'moth-flap 0.28s steps(20) infinite';
+    }
+
+    // ── Easter-egg: first moth becomes a secret link while flapping ─────
+    let secretTimer = null;
+    const secretMoth = document.querySelector('.moth-animated');
+
+    function setSecret(active) {
+      if (!secretMoth) return;
+      secretMoth.style.pointerEvents = active ? 'auto'   : 'none';
+      secretMoth.style.cursor        = active ? 'pointer': '';
+      secretMoth.style.filter        = active
+        ? 'drop-shadow(0 0 6px rgba(192,120,48,0.55))'
+        : '';
+    }
+
+    if (secretMoth) {
+      // pointer-events:none is on .moth-deco (parent); setting auto on the
+      // child is enough — CSS allows child to override parent's none.
+      secretMoth.addEventListener('click', () => {
+        window.location.href = 'fotky-en.html';
+      });
+    }
+
+    async function runMoth(el, isSecret) {
+      pauseMoth(el);
+      while (true) {
+        await sleep(5000 + Math.random() * 7000);
+
+        if (isSecret) {
+          clearTimeout(secretTimer);
+          setSecret(true);
+        }
+
+        startMoth(el);
+        await sleep(2 * FLAP_MS);
+        pauseMoth(el);
+
+        if (isSecret) {
+          // stay clickable 1 s after flapping stops, then hide
+          secretTimer = setTimeout(() => setSecret(false), 1000);
+        }
+      }
+    }
+
+    // Stagger so the two moths never flap simultaneously
+    document.querySelectorAll('.moth-animated').forEach((el, i) => {
+      const jitter = i * 3500 + Math.random() * 2000;
+      setTimeout(() => runMoth(el, i === 0), jitter);
+    });
+
+    // Discreetly pre-cache gallery photos after page settles.
+    // One image every 3 s — invisible, unhurried, stores in browser HTTP cache.
+    (function preloadGallery() {
+      const photos = [
+        'fotky/672c7dcf-fa2b-4abc-ab3e-3fd6674066fc.jpg',
+        'fotky/68462706360__F9641442-FB1F-413F-B432-1B13733306E4.jpeg',
+        'fotky/71664319518__C7A9F2E0-C85B-4E1E-91AE-826EE4E126C8.jpeg',
+        'fotky/7986c5d3-6dde-4fb8-bddf-7a2e8b428a32.jpg',
+        'fotky/7ad0030f-7c47-4ab1-be66-66778d9a5c34.jpg',
+        'fotky/957791E0-6955-4E4A-AB69-8E51C0E5F6F7.JPG',
+        'fotky/960cabc0-3559-4225-af46-33ff5130656f.jpg',
+        'fotky/98c23595-142d-4887-81fe-ee063b4fd756.jpg',
+        'fotky/IMG_0838.jpeg',
+        'fotky/IMG_1282.jpeg',
+        'fotky/IMG_1885.jpeg',
+        'fotky/IMG_20180603_171142_Original.jpg',
+        'fotky/IMG_2634.jpeg',
+        'fotky/IMG_2730.jpeg',
+        'fotky/IMG_2781.jpeg',
+        'fotky/IMG_3128.jpeg',
+        'fotky/IMG_3320.jpeg',
+        'fotky/IMG_3605.jpeg',
+        'fotky/IMG_4745.jpeg',
+        'fotky/IMG_5126.jpeg',
+        'fotky/IMG_6461.jpeg',
+        'fotky/IMG_6843.jpeg',
+        'fotky/IMG_7014.jpeg',
+        'fotky/IMG_7677.jpeg',
+        'fotky/IMG_8049.jpeg',
+        'fotky/IMG_8704.jpeg',
+      ];
+      let i = 0;
+      function next() {
+        if (i >= photos.length) return;
+        const img = new Image();
+        img.src = photos[i++];
+        img.onload = img.onerror = () => setTimeout(next, 3000);
+      }
+      // Start 8 s after page load — page assets get priority first
+      window.addEventListener('load', () => setTimeout(next, 8000));
+    })();
+  </script>
+
+</body>
+</html>
