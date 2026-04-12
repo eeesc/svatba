@@ -9,7 +9,13 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-LGG7WZ05FT');
+    /* Explicit page_title so this shows as its own row (not merged with index title). */
+    gtag('config', 'G-LGG7WZ05FT', {
+      send_page_view: true,
+      page_title: 'Fotky — Easter egg (CS)',
+      page_location: window.location.href,
+      page_path: window.location.pathname + window.location.search
+    });
     gtag('event', 'easter_egg_gallery', { locale: 'cs' });
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">

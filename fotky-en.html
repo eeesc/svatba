@@ -9,7 +9,12 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-LGG7WZ05FT');
+    gtag('config', 'G-LGG7WZ05FT', {
+      send_page_view: true,
+      page_title: 'Photos — Easter egg (EN)',
+      page_location: window.location.href,
+      page_path: window.location.pathname + window.location.search
+    });
     gtag('event', 'easter_egg_gallery', { locale: 'en' });
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
