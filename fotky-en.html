@@ -3,19 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Photos — Jonáš & Natálie</title>
+  <title>Photos (Easter egg, EN) — Jonáš &amp; Natálie</title>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGG7WZ05FT"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-LGG7WZ05FT', {
-      send_page_view: true,
-      page_title: 'Photos — Easter egg (EN)',
-      page_location: window.location.href,
-      page_path: window.location.pathname + window.location.search
-    });
-    gtag('event', 'easter_egg_gallery', { locale: 'en' });
+    gtag('config', 'G-LGG7WZ05FT');
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -306,6 +300,12 @@
     lbImg.addEventListener('touchend',   e => {
       const dx = e.changedTouches[0].clientX - swipeX;
       if (Math.abs(dx) > 40) dx < 0 ? open(current + 1) : open(current - 1);
+    });
+  </script>
+
+  <script>
+    window.addEventListener('load', function () {
+      gtag('event', 'easter_egg_gallery', { egg_lang: 'en' });
     });
   </script>
 
