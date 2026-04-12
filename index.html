@@ -170,6 +170,22 @@
     /* RSVP sits a bit lower than the other signs on desktop only */
     .nav-rsvp { margin-top: -20px; }
 
+    /* Language switch — top right, does not affect centred nav row */
+    .nav-lang {
+      position: absolute;
+      right: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--mid);
+      z-index: 10000;
+    }
+    .nav-lang:hover {
+      color: var(--amber-d);
+    }
+
     /* ── HERO ─────────────────────────────────────────── */
     .hero {
       min-height: 100vh;
@@ -585,6 +601,7 @@
     @media (max-width: 620px) {
 
       nav { gap: 0.15rem; padding: 0.35rem 0.5rem; }
+      .nav-lang { right: 0.45rem; font-size: 0.65rem; }
       nav a { padding: 0.05rem 0.15rem; }
       .nav-img { height: 40px; }
       .nav-rsvp   { margin-top: -18px; }
@@ -605,6 +622,7 @@
 <body>
 
   <nav>
+    <a href="index-en.html" class="nav-lang" lang="en" title="English version">EN</a>
     <a href="#program"><img class="nav-img" src="menu_alpha/program_nav.png" alt="program"></a>
     <a href="#mista"><img class="nav-img" src="menu_alpha/mista_nav.png" alt="místa"></a>
     <a href="#doprava"><img class="nav-img" src="menu_alpha/doprava_nav.png" alt="doprava"></a>
