@@ -848,7 +848,7 @@
 
         <div class="form-group" id="volna-mista-group" style="display:none">
           <label>Kolik máte volných míst?</label>
-          <select name="volna_mista">
+          <select name="volna_mista" id="volna-mista-select" disabled>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -978,12 +978,20 @@
     document.addEventListener('gesturechange', function(e) { e.preventDefault(); }, { passive: false });
 
     // ── Car-seats toggle ─────────────────────────────────────────────────
+    const volnaMistaGroup  = document.getElementById('volna-mista-group');
+    const volnaMistaSelect = document.getElementById('volna-mista-select');
+    const autoVolnaRadio   = document.getElementById('auto-volna');
+
+    function syncVolnaMistaState() {
+      const hasSpareSeats = autoVolnaRadio.checked;
+      volnaMistaGroup.style.display = hasSpareSeats ? 'block' : 'none';
+      volnaMistaSelect.disabled = !hasSpareSeats;
+    }
+
     document.querySelectorAll('input[name="auto"]').forEach(el => {
-      el.addEventListener('change', () => {
-        document.getElementById('volna-mista-group').style.display =
-          document.getElementById('auto-volna').checked ? 'block' : 'none';
-      });
+      el.addEventListener('change', syncVolnaMistaState);
     });
+    syncVolnaMistaState();
 
     // ── Help-detail toggle ────────────────────────────────────────────────
     document.querySelectorAll('input[name="pomoc_zda"]').forEach(el => {
