@@ -565,6 +565,18 @@
       color: var(--amber);
     }
 
+    .form-error {
+      display: none;
+      margin: 0 0 1rem 0;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid #cf5a5a;
+      border-radius: 6px;
+      background: #fff4f4;
+      color: #8f2a2a;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
     /* ── CONTACT ──────────────────────────────────────── */
     .contact-body {
       text-align: center;
@@ -818,9 +830,12 @@
       <div class="form-success" id="form-success">
         Thank you so much! We cannot wait to see you ♡
       </div>
-      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbxyuzTm1ebWrBcIJv84vRT6w7bsKs6ORkDg0mcAigCPbqaoGXUQaiooWLXUNAkyeQIcYQ/exec" method="POST">
+      <div class="form-error" id="form-error" role="alert"></div>
+      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbwk34QspBC70jioYfQ--UxXYTg7G_kDok8IdSUYjmweW_dpIvg9ANN51-2GXjEZaCK6nw/exec" method="POST">
         <!-- Sent as POST field form_locale — add a column / e.parameter.form_locale in Apps Script -->
         <input type="hidden" name="form_locale" value="en">
+        <input type="hidden" name="submission_id" id="submission-id">
+        <input type="hidden" name="submitted_at_utc" id="submitted-at-utc">
 
         <div class="form-group">
           <label>Please send your reply by the end of April.</label>
@@ -873,7 +888,7 @@
         <div class="form-group">
           <label>How will you travel?</label>
           <div class="radio-group">
-            <label><input type="radio" name="auto" value="auto_volna" id="auto-volna"> by car — I have spare seats (details below)</label>
+            <label><input type="radio" name="auto" value="auto_volna" id="auto-volna" required> by car — I have spare seats (details below)</label>
             <label><input type="radio" name="auto" value="auto_plne"> by car — full</label>
             <label><input type="radio" name="auto" value="vlastni_osa"> other / not by car</label>
             <label><input type="radio" name="auto" value="autobus_rakovnik"> shared coach from Rakovník</label>
@@ -909,7 +924,7 @@
         <div class="form-group">
           <label>Help with preparations</label>
           <div class="radio-group">
-            <label><input type="radio" name="pomoc_zda" value="ano" id="pomoc-ano"> yes, happy to help</label>
+            <label><input type="radio" name="pomoc_zda" value="ano" id="pomoc-ano" required> yes, happy to help</label>
             <label><input type="radio" name="pomoc_zda" value="ne"> no — I will help by consuming</label>
           </div>
         </div>
@@ -1035,22 +1050,71 @@
       });
     });
 
-    // ── Google Apps Script submit ─────────────────────────────────────────
-    // Apps Script redirects prevent reading the response, so we use no-cors
-    // and optimistically show the success message after sending.
+    document.querySelectorAll('input[name="auto"]').forEach((el, idx) => {
+      el.required = idx === 0;
+    });
+    document.querySelectorAll('input[name="pomoc_zda"]').forEach((el, idx) => {
+      el.required = idx === 0;
+    });
+
+    // ── Google Apps Script submit (confirmed + retried) ───────────────────
     const form = document.getElementById('rsvp-form');
+    const errorBox = document.getElementById('form-error');
+    const submitIdInput = document.getElementById('submission-id');
+    const submittedAtInput = document.getElementById('submitted-at-utc');
+
+    function newSubmissionId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    async function postWithRetry(url, body, attempts) {
+      let lastError = null;
+      for (let i = 1; i <= attempts; i++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            body
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (!data || data.result !== 'success') {
+            throw new Error(data && data.message ? data.message : 'Unexpected response');
+          }
+          return data;
+        } catch (err) {
+          lastError = err;
+          if (i < attempts) {
+            await new Promise(r => setTimeout(r, i * 700));
+          }
+        }
+      }
+      throw lastError || new Error('Submission failed');
+    }
+
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = form.querySelector('.btn-submit');
+      if (btn.disabled) return;
+
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+
+      submitIdInput.value = newSubmissionId();
+      submittedAtInput.value = new Date().toISOString();
+
+      const payload = new URLSearchParams(new FormData(form));
       btn.disabled = true;
       btn.textContent = 'Sending…';
       try {
-        await fetch(form.action, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: new URLSearchParams(new FormData(form))
-        });
-      } catch (_) {}
+        await postWithRetry(form.action, payload, 3);
+      } catch (_) {
+        btn.disabled = false;
+        btn.textContent = 'Send ♡';
+        errorBox.textContent = 'Submission did not go through. Please check your connection and try again.';
+        errorBox.style.display = 'block';
+        return;
+      }
       // capture position BEFORE hiding the form
       launchMoths(btn);
       form.style.display = 'none';

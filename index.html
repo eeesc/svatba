@@ -518,6 +518,18 @@
       color: var(--amber);
     }
 
+    .form-error {
+      display: none;
+      margin: 0 0 1rem 0;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid #cf5a5a;
+      border-radius: 6px;
+      background: #fff4f4;
+      color: #8f2a2a;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
     /* ── CONTACT ──────────────────────────────────────── */
     .contact-body {
       text-align: center;
@@ -785,7 +797,11 @@
       <div class="form-success" id="form-success">
         Díky moc! Těšíme se na vás ♡
       </div>
-      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbxyuzTm1ebWrBcIJv84vRT6w7bsKs6ORkDg0mcAigCPbqaoGXUQaiooWLXUNAkyeQIcYQ/exec" method="POST">
+      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbwk34QspBC70jioYfQ--UxXYTg7G_kDok8IdSUYjmweW_dpIvg9ANN51-2GXjEZaCK6nw/exec" method="POST">
+        <div class="form-error" id="form-error" role="alert"></div>
+        <input type="hidden" name="form_locale" value="cs">
+        <input type="hidden" name="submission_id" id="submission-id">
+        <input type="hidden" name="submitted_at_utc" id="submitted-at-utc">
 
         <div class="form-group">
           <label>Prosíme o vyplnění formuláře do konce dubna.</label>
@@ -838,7 +854,7 @@
         <div class="form-group">
           <label>Jak přijedete?</label>
           <div class="radio-group">
-            <label><input type="radio" name="auto" value="auto_volna" id="auto-volna"> autem, mám volná místa, upřesním níže</label>
+            <label><input type="radio" name="auto" value="auto_volna" id="auto-volna" required> autem, mám volná místa, upřesním níže</label>
             <label><input type="radio" name="auto" value="auto_plne"> autem, ale plně obsazeným</label>
             <label><input type="radio" name="auto" value="vlastni_osa"> přijedu po vlastní ose jinak než autem</label>
             <label><input type="radio" name="auto" value="autobus_rakovnik"> chci jet společným autobusem z Rakovníku</label>
@@ -874,7 +890,7 @@
         <div class="form-group">
           <label>Pomoc s přípravami</label>
           <div class="radio-group">
-            <label><input type="radio" name="pomoc_zda" value="ano" id="pomoc-ano"> ano, rád/a pomůžu</label>
+            <label><input type="radio" name="pomoc_zda" value="ano" id="pomoc-ano" required> ano, rád/a pomůžu</label>
             <label><input type="radio" name="pomoc_zda" value="ne"> ne, pomůžu s konzumací</label>
           </div>
         </div>
@@ -1001,22 +1017,71 @@
       });
     });
 
-    // ── Google Apps Script submit ─────────────────────────────────────────
-    // Apps Script redirects prevent reading the response, so we use no-cors
-    // and optimistically show the success message after sending.
+    document.querySelectorAll('input[name="auto"]').forEach((el, idx) => {
+      el.required = idx === 0;
+    });
+    document.querySelectorAll('input[name="pomoc_zda"]').forEach((el, idx) => {
+      el.required = idx === 0;
+    });
+
+    // ── Google Apps Script submit (potvrzeny + opakovany) ────────────────
     const form = document.getElementById('rsvp-form');
+    const errorBox = document.getElementById('form-error');
+    const submitIdInput = document.getElementById('submission-id');
+    const submittedAtInput = document.getElementById('submitted-at-utc');
+
+    function newSubmissionId() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+    }
+
+    async function postWithRetry(url, body, attempts) {
+      let lastError = null;
+      for (let i = 1; i <= attempts; i++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            body
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (!data || data.result !== 'success') {
+            throw new Error(data && data.message ? data.message : 'Necekana odpoved');
+          }
+          return data;
+        } catch (err) {
+          lastError = err;
+          if (i < attempts) {
+            await new Promise(r => setTimeout(r, i * 700));
+          }
+        }
+      }
+      throw lastError || new Error('Odeslani selhalo');
+    }
+
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = form.querySelector('.btn-submit');
+      if (btn.disabled) return;
+
+      errorBox.style.display = 'none';
+      errorBox.textContent = '';
+
+      submitIdInput.value = newSubmissionId();
+      submittedAtInput.value = new Date().toISOString();
+
+      const payload = new URLSearchParams(new FormData(form));
       btn.disabled = true;
       btn.textContent = 'odesílám…';
       try {
-        await fetch(form.action, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: new URLSearchParams(new FormData(form))
-        });
-      } catch (_) {}
+        await postWithRetry(form.action, payload, 3);
+      } catch (_) {
+        btn.disabled = false;
+        btn.textContent = 'odeslat ♡';
+        errorBox.textContent = 'Odpoved se neodeslala. Zkuste to prosim znovu.';
+        errorBox.style.display = 'block';
+        return;
+      }
       // capture position BEFORE hiding the form
       launchMoths(btn);
       form.style.display = 'none';
