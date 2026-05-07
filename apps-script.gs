@@ -11,8 +11,27 @@
  * 5) Put the /exec URL into both form actions in index.html + index-en.html.
  */
 
-const SHEET_NAME = 'RSVP';
+const SHEET_NAME = 'Sheet1';
 const ERROR_SHEET_NAME = 'RSVP_ERRORS';
+// Put your Google Sheet ID here to avoid failures in standalone web-app deployments.
+// Example: https://docs.google.com/spreadsheets/d/<THIS_PART>/edit
+const SPREADSHEET_ID = '1pSfxp-XPRSTxMI1tUkYvTkYn_zHDNQCsMi5CviWMrX4';
+const RSVP_HEADERS = [
+  'received_at',
+  'jmeno',
+  'email',
+  'pocet_lidi',
+  'pocet_deti',
+  'prijezd',
+  'ucast',
+  'auto',
+  'volna_mista',
+  'jidlo',
+  'spani',
+  'pomoc_zda',
+  'pomoc',
+  'poznamka'
+];
 
 function doOptions() {
   return ContentService.createTextOutput('');
@@ -27,11 +46,10 @@ function doPost(e) {
     const params = e && e.parameter ? e.parameter : {};
     const paramsMulti = e && e.parameters ? e.parameters : {};
 
-    const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
-    if (!sheet) throw new Error('Missing sheet: ' + SHEET_NAME);
+    const sheet = getOrCreateRsvpSheet_();
 
     const submissionId = safeValue_(params.submission_id) || makeSubmissionId_();
-    const alreadyExists = hasSubmissionId_(sheet, submissionId);
+    const alreadyExists = hasSubmissionId_(submissionId);
 
     if (alreadyExists) {
       return json_({
@@ -43,9 +61,6 @@ function doPost(e) {
 
     const row = [
       new Date(), // received_at
-      submissionId,
-      safeValue_(params.form_locale),
-      safeValue_(params.submitted_at_utc),
       safeValue_(params.jmeno),
       safeValue_(params.email),
       safeValue_(params.pocet_lidi),
@@ -62,6 +77,7 @@ function doPost(e) {
     ];
 
     sheet.appendRow(row);
+    markSubmissionId_(submissionId);
 
     return json_({
       result: 'success',
@@ -72,7 +88,8 @@ function doPost(e) {
     logError_(e, err);
     return json_({
       result: 'error',
-      message: 'Submission failed. Please try again.'
+      message: 'Submission failed. Please try again.',
+      error_code: safeErrorCode_(err)
     });
   } finally {
     try {
@@ -85,6 +102,39 @@ function json_(payload) {
   return ContentService
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getOrCreateRsvpSheet_() {
+  const ss = getSpreadsheet_();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet && ss.getSheets().length > 0) {
+    // Fallback for projects where the primary tab kept the default name.
+    sheet = ss.getSheets()[0];
+  }
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(RSVP_HEADERS);
+  } else if (sheet.getLastRow() === 1) {
+    const firstRow = sheet.getRange(1, 1, 1, RSVP_HEADERS.length).getValues()[0];
+    const hasAnyHeader = firstRow.some(v => String(v).trim() !== '');
+    if (!hasAnyHeader) {
+      sheet.getRange(1, 1, 1, RSVP_HEADERS.length).setValues([RSVP_HEADERS]);
+    }
+  }
+
+  return sheet;
+}
+
+function getSpreadsheet_() {
+  if (SPREADSHEET_ID && SPREADSHEET_ID.trim()) {
+    return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
+  }
+  const active = SpreadsheetApp.getActive();
+  if (active) return active;
+  throw new Error('Spreadsheet not resolved. Set SPREADSHEET_ID.');
 }
 
 function safeValue_(value) {
@@ -101,22 +151,21 @@ function makeSubmissionId_() {
   return 'srv-' + Utilities.getUuid();
 }
 
-function hasSubmissionId_(sheet, submissionId) {
+function hasSubmissionId_(submissionId) {
   if (!submissionId) return false;
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return false;
+  const props = PropertiesService.getScriptProperties();
+  return props.getProperty('sub_' + submissionId) === '1';
+}
 
-  // Column B contains submission_id in the row format above.
-  const values = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
-  for (let i = 0; i < values.length; i++) {
-    if (String(values[i][0]) === submissionId) return true;
-  }
-  return false;
+function markSubmissionId_(submissionId) {
+  if (!submissionId) return;
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('sub_' + submissionId, '1');
 }
 
 function logError_(e, err) {
   try {
-    const ss = SpreadsheetApp.getActive();
+    const ss = getSpreadsheet_();
     let sheet = ss.getSheetByName(ERROR_SHEET_NAME);
     if (!sheet) sheet = ss.insertSheet(ERROR_SHEET_NAME);
 
@@ -129,4 +178,11 @@ function logError_(e, err) {
       params
     ]);
   } catch (_) {}
+}
+
+function safeErrorCode_(err) {
+  const message = err && err.message ? String(err.message) : '';
+  if (/Spreadsheet not resolved/.test(message)) return 'SPREADSHEET_NOT_RESOLVED';
+  if (/Missing sheet/.test(message)) return 'MISSING_SHEET';
+  return 'INTERNAL_ERROR';
 }

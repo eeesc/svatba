@@ -797,7 +797,7 @@
       <div class="form-success" id="form-success">
         Díky moc! Těšíme se na vás ♡
       </div>
-      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbwk34QspBC70jioYfQ--UxXYTg7G_kDok8IdSUYjmweW_dpIvg9ANN51-2GXjEZaCK6nw/exec" method="POST">
+      <form id="rsvp-form" action="https://script.google.com/macros/s/AKfycbxcnE1A6y3oJClqqmXjhSnYGnaUwBvLoKNTmEJOgs5ie5192u0_Gfh0ZkWsR51MlXRJDA/exec" method="POST">
         <div class="form-error" id="form-error" role="alert"></div>
         <input type="hidden" name="form_locale" value="cs">
         <input type="hidden" name="submission_id" id="submission-id">
@@ -1046,11 +1046,14 @@
           if (!res.ok) throw new Error('HTTP ' + res.status);
           const data = await res.json();
           if (!data || data.result !== 'success') {
-            throw new Error(data && data.message ? data.message : 'Necekana odpoved');
+            const logicalError = new Error(data && data.message ? data.message : 'Necekana odpoved');
+            logicalError.noRetry = true;
+            throw logicalError;
           }
           return data;
         } catch (err) {
           lastError = err;
+          if (err && err.noRetry) break;
           if (i < attempts) {
             await new Promise(r => setTimeout(r, i * 700));
           }
