@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/upload-photo.js": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  }
+}

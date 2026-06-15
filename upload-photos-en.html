@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Share photos — Jonáš &amp; Natálie</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGG7WZ05FT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LGG7WZ05FT');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --amber:   #c07830;
+      --amber-d: #9e6020;
+      --blue:    #8faac8;
+      --dark:    #2c2825;
+      --mid:     #7a6e66;
+      --light:   rgba(255,255,255,0.75);
+      --grid:    rgba(143,170,200,0.25);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 1.08rem;
+      color: var(--dark);
+      background-color: #ffffff;
+      overflow-x: clip;
+      touch-action: pan-y;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(940px, 100vw);
+      z-index: -1;
+      background-image: url('pozadni_long_alpha.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: top center;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      padding: 0.6rem 1.5rem;
+      background: #ffffff;
+      border-bottom: 1px solid var(--grid);
+    }
+
+    .nav-back {
+      text-decoration: none;
+      color: var(--mid);
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--grid);
+      border-radius: 3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .nav-back:hover { color: var(--amber); border-color: var(--amber); }
+
+    .nav-title {
+      font-size: 1rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--mid);
+    }
+
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 6rem 1.25rem 4rem;
+    }
+
+    .page-heading {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .page-heading h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-heading p {
+      color: var(--mid);
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+
+    .pu-card {
+      background: var(--light);
+      border: 1px solid var(--grid);
+      border-radius: 4px;
+      padding: 1.75rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .pu-card h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .pu-card p {
+      color: var(--mid);
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .pu-manual a {
+      color: var(--amber);
+      word-break: break-all;
+    }
+
+    .pu-manual--disabled a {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .pu-dropzone {
+      border: 2px dashed rgba(143,170,200,0.65);
+      border-radius: 6px;
+      padding: 2rem 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1.25rem;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+
+    .pu-dropzone--active {
+      border-color: var(--amber);
+      background: rgba(192,120,48,0.06);
+    }
+
+    .pu-dropzone p {
+      color: var(--mid);
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .pu-choose-btn {
+      display: inline-block;
+      padding: 0.85rem 1.4rem;
+      min-height: 48px;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .pu-choose-btn:hover { background: var(--amber-d); }
+    .pu-choose-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .pu-field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      font-size: 1rem;
+    }
+
+    .pu-field input {
+      width: 100%;
+      padding: 0.75rem 0.85rem;
+      min-height: 48px;
+      border: 1px solid rgba(143,170,200,0.5);
+      border-radius: 2px;
+      background: rgba(247,245,241,0.9);
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .pu-field input:focus {
+      outline: none;
+      border-color: var(--amber);
+    }
+
+    .pu-field-note {
+      margin-top: 0.35rem;
+      font-size: 0.85rem;
+      color: var(--blue);
+    }
+
+    .pu-preview-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin: 1.25rem 0;
+    }
+
+    .pu-preview-item {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.5rem;
+      border: 1px solid var(--grid);
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    .pu-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: rgba(143,170,200,0.15);
+    }
+
+    .pu-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .pu-name {
+      font-size: 0.92rem;
+      word-break: break-word;
+      margin-bottom: 0.35rem;
+    }
+
+    .pu-progress {
+      height: 6px;
+      background: rgba(143,170,200,0.25);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .pu-progress-bar {
+      height: 100%;
+      background: var(--amber);
+      width: 0;
+      transition: width 0.15s linear;
+    }
+
+    .pu-status {
+      font-size: 0.82rem;
+      color: var(--mid);
+      margin-top: 0.25rem;
+    }
+
+    .pu-status--ok { color: #3a7a4a; }
+    .pu-status--err { color: #8f2a2a; }
+
+    .pu-remove {
+      width: 44px;
+      height: 44px;
+      border: none;
+      background: transparent;
+      color: var(--mid);
+      font-size: 1.6rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .pu-remove:hover { color: var(--amber); background: rgba(192,120,48,0.08); }
+
+    .pu-upload-btn {
+      width: 100%;
+      padding: 0.95rem 1rem;
+      min-height: 52px;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .pu-upload-btn:hover { background: var(--amber-d); }
+    .pu-upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .pu-error {
+      margin-bottom: 1rem;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid #cf5a5a;
+      border-radius: 6px;
+      background: #fff4f4;
+      color: #8f2a2a;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .pu-success {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      font-size: 1.35rem;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--amber);
+      line-height: 1.5;
+    }
+
+    .pu-divider {
+      text-align: center;
+      color: var(--mid);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      margin: 0.5rem 0 1.25rem;
+    }
+
+    #pu-file-input { display: none; }
+
+    @media (max-width: 480px) {
+      .page { padding-top: 5.5rem; }
+      .pu-dropzone { padding: 1.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index-en.html" class="nav-back">← back</a>
+    <span class="nav-title">Jonáš &amp; Natálie · photos</span>
+  </nav>
+
+  <div class="page">
+    <div class="page-heading">
+      <h1>Share your photos</h1>
+      <p>Got pictures from the wedding or the lead-up? Send them our way — we'd love to see them.</p>
+    </div>
+
+    <div id="photo-upload">
+      <div id="pu-success" class="pu-card pu-success" hidden>
+        Thank you for sharing your memories! 💛
+      </div>
+
+      <div id="pu-upload-panel">
+        <div class="pu-card pu-manual">
+          <h2>Or upload directly to the folder</h2>
+          <p>If you prefer Google Drive, you can add photos manually to our shared folder:</p>
+          <p style="margin-top:0.6rem"><a id="pu-drive-link" href="#" target="_blank" rel="noopener">Open folder on Google Drive</a></p>
+        </div>
+
+        <p class="pu-divider">— or upload here —</p>
+
+        <div class="pu-card">
+          <div id="pu-error" class="pu-error" hidden role="alert"></div>
+
+          <div id="pu-dropzone" class="pu-dropzone">
+            <p>Drop photos here<br>or</p>
+            <button type="button" id="pu-choose-btn" class="pu-choose-btn">Choose photos</button>
+            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP · max 20 MB per file</p>
+          </div>
+          <input type="file" id="pu-file-input" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif" multiple>
+
+          <div class="pu-field">
+            <label for="pu-from">Who are these photos from? (optional)</label>
+            <input type="text" id="pu-from" name="from" placeholder="Jane &amp; Peter, the Novák family…" maxlength="60" autocomplete="name">
+            <p class="pu-field-note">If you fill this in, we'll add your name to the filename in the folder.</p>
+          </div>
+
+          <div id="pu-preview-list" class="pu-preview-list"></div>
+
+          <button type="button" id="pu-upload-btn" class="pu-upload-btn" disabled>Upload photos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const APPS_SCRIPT_UPLOAD_URL = 'PASTE_EXEC_URL_AFTER_DEPLOY';
+
+      const onGithubPages = location.hostname.endsWith('.github.io');
+      const appsScriptReady =
+        APPS_SCRIPT_UPLOAD_URL.indexOf('PASTE_') === -1 &&
+        APPS_SCRIPT_UPLOAD_URL.indexOf('script.google.com') !== -1;
+
+      window.PHOTO_UPLOAD_CONFIG = {
+        uploadUrl: onGithubPages && appsScriptReady
+          ? APPS_SCRIPT_UPLOAD_URL
+          : '/api/upload-photo',
+        uploadMode: onGithubPages && appsScriptReady ? 'apps-script' : 'multipart',
+        driveFolderUrl: 'https://drive.google.com/drive/folders/1n7GYR_Vjrfv2T2DYal5X1GUFh5c5uFSb',
+        strings: {
+          errRejected: 'Some files were skipped (unsupported format or over 20 MB): ',
+          errGeneric: 'Upload failed. Please try again.',
+          errNetwork: 'Network error. Check your connection and try again.',
+          errPartial: 'Some photos did not upload. Remove failed ones or try again.',
+          statusDone: 'Uploaded',
+          statusError: 'Failed',
+          statusUploading: 'Uploading…',
+          remove: 'Remove'
+        }
+      };
+    })();
+  </script>
+  <script src="js/photo-upload.js"></script>
+
+</body>
+</html>
