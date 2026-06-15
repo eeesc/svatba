@@ -7,8 +7,8 @@
  * 2) Set FOLDER_ID below to your shared folder.
  * 3) Deploy → New deployment → Web app:
  *      Execute as: Me
- *      Who has access: Anyone
- * 4) Copy the /exec URL into nahrati-fotky.html + upload-photos-en.html
+ *      Who has access: Anyone   ← must be "Anyone", not "Anyone with Google account"
+ * 4) After code changes: Deploy → Manage deployments → Edit → New version → Deploy
  *    (PHOTO_UPLOAD_CONFIG.uploadUrl).
  */
 
@@ -36,13 +36,17 @@ function doOptions() {
   return ContentService.createTextOutput('');
 }
 
+function doGet() {
+  return json_({ ok: true, service: 'photo-upload' });
+}
+
 function doPost(e) {
   try {
-    const params = e && e.parameter ? e.parameter : {};
-    const fileName = safe_(params.fileName);
-    const mimeType = safe_(params.mimeType) || 'application/octet-stream';
-    const fileData = params.fileData;
-    const from = safe_(params.from);
+    const payload = readPayload_(e);
+    const fileName = safe_(payload.fileName);
+    const mimeType = safe_(payload.mimeType) || 'application/octet-stream';
+    const fileData = payload.fileData;
+    const from = safe_(payload.from);
 
     if (!fileName || !fileData) {
       return json_({ success: false, error: 'Missing file data.' });
@@ -76,6 +80,30 @@ function doPost(e) {
       error: err && err.message ? String(err.message) : 'Upload failed.',
     });
   }
+}
+
+function readPayload_(e) {
+  if (e && e.postData && e.postData.contents) {
+    const raw = e.postData.getDataAsString();
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (parseErr) {
+        throw new Error('Invalid upload payload.');
+      }
+    }
+  }
+
+  if (e && e.parameter) {
+    return {
+      fileName: e.parameter.fileName,
+      mimeType: e.parameter.mimeType,
+      fileData: e.parameter.fileData,
+      from: e.parameter.from,
+    };
+  }
+
+  return {};
 }
 
 function json_(payload) {

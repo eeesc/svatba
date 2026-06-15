@@ -145,7 +145,7 @@
         status.textContent = item.error || t('statusError', 'Failed');
         status.classList.add('pu-status--err');
       } else if (item.status === 'uploading') {
-        status.textContent = t('statusUploading', 'Uploading…');
+        status.textContent = item.statusText || t('statusUploading', 'Uploading…');
       }
 
       meta.append(name, barWrap, status);
@@ -181,6 +181,155 @@
       };
       reader.onerror = () => reject(new Error(t('errGeneric', 'Upload failed. Please try again.')));
       reader.readAsDataURL(file);
+    });
+  }
+
+  function compressIfNeeded(file) {
+    const compressible = /^image\/(jpeg|jpg|png|webp)$/i.test(file.type);
+    if (!compressible || file.size < 800 * 1024) {
+      return Promise.resolve(file);
+    }
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const maxDim = 2048;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width >= height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const outType = file.type === 'image/png' ? 'image/jpeg' : file.type;
+            const outName = extOf(file.name) === '.png'
+              ? file.name.replace(/\.png$/i, '.jpg')
+              : file.name;
+            resolve(new File([blob], outName, { type: outType, lastModified: Date.now() }));
+          },
+          file.type === 'image/png' ? 'image/jpeg' : file.type,
+          0.85
+        );
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(file);
+      };
+
+      img.src = url;
+    });
+  }
+
+  function parseAppsScriptResponse(text) {
+    const trimmed = (text || '').trim();
+    if (!trimmed) {
+      throw new Error(t('errEmptyResponse', 'Empty response from server.'));
+    }
+    if (trimmed.charAt(0) === '<') {
+      throw new Error(
+        t(
+          'errAccess',
+          'Upload server is not publicly accessible. Redeploy the Apps Script web app with access set to Anyone.'
+        )
+      );
+    }
+    try {
+      return JSON.parse(trimmed);
+    } catch (_) {
+      throw new Error(t('errGeneric', 'Upload failed. Please try again.'));
+    }
+  }
+
+  function uploadOneAppsScript(item, uploaderName) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        item.progress = 5;
+        item.status = 'uploading';
+        item.statusText = t('statusPreparing', 'Preparing…');
+        renderPreview();
+
+        const prepared = await compressIfNeeded(item.file);
+        item.progress = 20;
+        item.statusText = t('statusUploading', 'Uploading…');
+        renderPreview();
+
+        const fileData = await readFileAsBase64(prepared);
+        item.progress = 35;
+        renderPreview();
+
+        const payload = JSON.stringify({
+          fileName: prepared.name,
+          mimeType: prepared.type || 'application/octet-stream',
+          fileData,
+          from: uploaderName || '',
+        });
+
+        const xhr = new XMLHttpRequest();
+        const timeoutMs = 120000;
+        const timer = setTimeout(() => {
+          xhr.abort();
+          reject(new Error(t('errTimeout', 'Upload timed out. Try a smaller photo or better connection.')));
+        }, timeoutMs);
+
+        xhr.open('POST', uploadUrl);
+        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (!e.lengthComputable) return;
+          item.progress = 35 + Math.round((e.loaded / e.total) * 60);
+          renderPreview();
+        });
+
+        xhr.addEventListener('load', () => {
+          clearTimeout(timer);
+          try {
+            const data = parseAppsScriptResponse(xhr.responseText);
+            if (data && data.success) {
+              item.status = 'done';
+              item.progress = 100;
+              renderPreview();
+              resolve();
+              return;
+            }
+            reject(new Error((data && data.error) || t('errGeneric', 'Upload failed. Please try again.')));
+          } catch (err) {
+            reject(err);
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          clearTimeout(timer);
+          reject(new Error(t('errNetwork', 'Network error. Check your connection and try again.')));
+        });
+
+        xhr.addEventListener('abort', () => {
+          clearTimeout(timer);
+        });
+
+        xhr.send(payload);
+      } catch (err) {
+        reject(err);
+      }
     });
   }
 
@@ -220,40 +369,6 @@
 
       xhr.send(form);
     });
-  }
-
-  async function uploadOneAppsScript(item, uploaderName) {
-    item.progress = 15;
-    renderPreview();
-
-    const fileData = await readFileAsBase64(item.file);
-    item.progress = 45;
-    renderPreview();
-
-    const body = new URLSearchParams({
-      fileName: item.file.name,
-      mimeType: item.file.type || 'application/octet-stream',
-      fileData,
-      from: uploaderName || '',
-    });
-
-    item.progress = 60;
-    renderPreview();
-
-    const res = await fetch(uploadUrl, { method: 'POST', body });
-    if (!res.ok) {
-      throw new Error(t('errGeneric', 'Upload failed. Please try again.'));
-    }
-
-    const data = await res.json();
-    item.progress = 100;
-    renderPreview();
-
-    if (!data || !data.success) {
-      throw new Error((data && data.error) || t('errGeneric', 'Upload failed. Please try again.'));
-    }
-
-    item.status = 'done';
   }
 
   function uploadOne(item, uploaderName) {
