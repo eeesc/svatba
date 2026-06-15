@@ -80,6 +80,11 @@ function testDriveAccess_() {
 function doPost(e) {
   try {
     const payload = readPayload_(e);
+
+    if (safe_(payload.action) === 'list') {
+      return json_(listGalleryPhotos_());
+    }
+
     const fileName = safe_(payload.fileName);
     const mimeType = safe_(payload.mimeType) || 'application/octet-stream';
     const fileData = payload.fileData;

@@ -3,14 +3,14 @@
 
   const cfg = window.PHOTO_GALLERY_CONFIG || {};
   const listUrl = cfg.listUrl || '';
+  const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
+  const embedFolderId = cfg.embedFolderId || '';
   const strings = cfg.strings || {};
   const t = (key, fallback) => strings[key] || fallback;
 
   const galleryEl = document.getElementById('drive-gallery');
   const statusEl = document.getElementById('drive-gallery-status');
   if (!galleryEl || !listUrl) return;
-
-  let lightboxItems = [];
 
   function initLightbox(container) {
     const lb = document.getElementById('lightbox');
@@ -19,7 +19,7 @@
     if (!lb || !lbImg) return;
 
     let current = 0;
-    lightboxItems = Array.from(container.querySelectorAll('.gallery-item img'));
+    const lightboxItems = Array.from(container.querySelectorAll('.gallery-item img'));
 
     function open(idx) {
       if (!lightboxItems.length) return;
@@ -72,10 +72,63 @@
     statusEl.classList.toggle('drive-gallery-status--err', !!isError);
   }
 
+  function parseJson(text) {
+    const trimmed = (text || '').trim();
+    if (!trimmed || trimmed.charAt(0) === '<') {
+      throw new Error(t('errLoad', 'Galerii se nepovedlo načíst.'));
+    }
+    return JSON.parse(trimmed);
+  }
+
+  async function fetchPhotosGet() {
+    const res = await fetch(listUrl);
+    const data = parseJson(await res.text());
+    if (Array.isArray(data.photos)) return data.photos;
+    return null;
+  }
+
+  async function fetchPhotosPost() {
+    const res = await fetch(postUrl, {
+      method: 'POST',
+      body: new Blob([JSON.stringify({ action: 'list' })], { type: 'text/plain' }),
+    });
+    const data = parseJson(await res.text());
+    if (Array.isArray(data.photos)) return data.photos;
+    if (data && data.hint) {
+      throw new Error(
+        t(
+          'errStale',
+          'Galerie potřebuje aktualizovaný Apps Script. V editoru vložte apps-script-upload.gs a nasaďte novou verzi webové aplikace.'
+        )
+      );
+    }
+    return [];
+  }
+
+  async function fetchPhotos() {
+    try {
+      const fromGet = await fetchPhotosGet();
+      if (fromGet && fromGet.length) return fromGet;
+    } catch (_) {}
+
+    return fetchPhotosPost();
+  }
+
+  function showEmbedFallback() {
+    if (!embedFolderId) return false;
+    galleryEl.innerHTML =
+      '<iframe class="drive-embed" title="Fotky" src="https://drive.google.com/embeddedfolderview?id=' +
+      encodeURIComponent(embedFolderId) +
+      '#grid"></iframe>';
+    setStatus('', false);
+    return true;
+  }
+
   function renderPhotos(photos) {
     galleryEl.innerHTML = '';
 
     if (!photos.length) {
+      if (showEmbedFallback()) return;
       setStatus(t('empty', 'Zatím tu nejsou žádné fotky — buďte první!'), false);
       return;
     }
@@ -104,17 +157,12 @@
     galleryEl.innerHTML = '';
 
     try {
-      const res = await fetch(listUrl);
-      const text = await res.text();
-      const data = JSON.parse(text);
-
-      if (!data || !data.ok) {
-        throw new Error((data && data.error) || t('errLoad', 'Galerii se nepovedlo načíst.'));
-      }
-
-      renderPhotos(data.photos || []);
+      const photos = await fetchPhotos();
+      renderPhotos(photos);
     } catch (err) {
-      setStatus(err.message || t('errLoad', 'Galerii se nepovedlo načíst.'), true);
+      if (!showEmbedFallback()) {
+        setStatus(err.message || t('errLoad', 'Galerii se nepovedlo načíst.'), true);
+      }
     }
   }
 
