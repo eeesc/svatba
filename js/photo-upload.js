@@ -454,6 +454,7 @@
     if (!failed && queue.every((item) => item.status === 'done')) {
       uploadPanel.hidden = true;
       successBox.hidden = false;
+      window.dispatchEvent(new CustomEvent('photo-upload:success'));
       return;
     }
 

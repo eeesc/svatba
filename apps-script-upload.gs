@@ -41,7 +41,10 @@ function doGet(e) {
   if (params.test === 'drive') {
     return json_(testDriveAccess_());
   }
-  return json_({ ok: true, service: 'photo-upload', hint: 'Add ?test=drive to verify Drive access.' });
+  if (params.action === 'list') {
+    return json_(listGalleryPhotos_());
+  }
+  return json_({ ok: true, service: 'photo-upload', hint: 'Add ?action=list or ?test=drive' });
 }
 
 /** Run once from the script editor (▶) to trigger the Google authorization prompt. */
@@ -102,6 +105,7 @@ function doPost(e) {
     const blob = Utilities.newBlob(bytes, mimeType, storedAs);
     const folder = DriveApp.getFolderById(FOLDER_ID);
     const file = folder.createFile(blob);
+    makeFileViewable_(file);
 
     return json_({
       success: true,
@@ -185,4 +189,48 @@ function buildFilename_(originalName, uploaderName) {
   const dot = base.lastIndexOf('.');
   if (dot === -1) return safeName + '_' + base;
   return safeName + '_' + base.slice(0, dot) + base.slice(dot);
+}
+
+function listGalleryPhotos_() {
+  const folder = DriveApp.getFolderById(FOLDER_ID);
+  const iterator = folder.getFiles();
+  const photos = [];
+
+  while (iterator.hasNext()) {
+    const file = iterator.next();
+    const name = file.getName();
+    if (shouldSkipGalleryFile_(name)) continue;
+
+    const mime = file.getMimeType();
+    if (!isAllowedImage_(name, mime) && !/^image\//.test(mime)) continue;
+
+    const id = file.getId();
+    makeFileViewable_(file);
+    photos.push({
+      id: id,
+      name: name,
+      thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
+      full: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1920',
+      created: file.getDateCreated().toISOString(),
+    });
+  }
+
+  photos.sort(function (a, b) {
+    return new Date(b.created).getTime() - new Date(a.created).getTime();
+  });
+
+  return { ok: true, count: photos.length, photos: photos };
+}
+
+function shouldSkipGalleryFile_(name) {
+  if (!name) return true;
+  if (name.indexOf('_chunk_') !== -1) return true;
+  if (/^(_svatba_upload_test|perm-test|permission-test|test[-_])/i.test(name)) return true;
+  return false;
+}
+
+function makeFileViewable_(file) {
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (_) {}
 }
