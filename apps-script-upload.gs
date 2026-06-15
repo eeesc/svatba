@@ -36,8 +36,42 @@ function doOptions() {
   return ContentService.createTextOutput('');
 }
 
-function doGet() {
-  return json_({ ok: true, service: 'photo-upload' });
+function doGet(e) {
+  const params = e && e.parameter ? e.parameter : {};
+  if (params.test === 'drive') {
+    return json_(testDriveAccess_());
+  }
+  return json_({ ok: true, service: 'photo-upload', hint: 'Add ?test=drive to verify Drive access.' });
+}
+
+/** Run once from the script editor (▶) to trigger the Google authorization prompt. */
+function runAuthorizationTest() {
+  const result = testDriveAccess_();
+  Logger.log(JSON.stringify(result, null, 2));
+  return result;
+}
+
+function testDriveAccess_() {
+  try {
+    const folder = DriveApp.getFolderById(FOLDER_ID);
+    const name = folder.getName();
+    return {
+      ok: true,
+      folderId: FOLDER_ID,
+      folderName: name,
+      canAccessDrive: true,
+      message: 'Drive access OK — uploads should work.',
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      folderId: FOLDER_ID,
+      canAccessDrive: false,
+      error: err && err.message ? String(err.message) : 'Drive access failed.',
+      message:
+        'Open Apps Script → select runAuthorizationTest → Run ▶ → approve all prompts → redeploy web app.',
+    };
+  }
 }
 
 function doPost(e) {

@@ -7,7 +7,22 @@ The Vercel `/api/upload-photo` route is kept for a future full Vercel deploy, bu
 
 ---
 
-## Step 1 — Deploy Apps Script (≈5 min)
+## Step 1 — Authorize Drive access
+
+1. Open [script.google.com](https://script.google.com) → your upload project
+2. Paste/update code from `apps-script-upload.gs`
+3. In the function dropdown, select **`runAuthorizationTest`**
+4. Click **Run ▶** — Google will ask for permissions. Approve **all** prompts (including Google Drive).
+5. If authorization fails or you see “This app is blocked”, use **Advanced → Go to … (unsafe)** — it’s your own script.
+
+Verify in the browser (after deploying, step 2):
+
+- Public: `https://script.google.com/macros/s/YOUR_ID/exec` → should show `{"ok":true,...}`
+- Drive test: `https://script.google.com/macros/s/YOUR_ID/exec?test=drive` → should show `"ok": true` and your folder name
+
+If `test=drive` shows `"ok": false`, Drive is not authorized — repeat step 3–4, then **Deploy → Manage deployments → Edit → New version**.
+
+## Step 2 — Deploy web app
 
 1. Open [script.google.com](https://script.google.com) → **New project**
 2. Paste contents of `apps-script-upload.gs`
@@ -16,7 +31,7 @@ The Vercel `/api/upload-photo` route is kept for a future full Vercel deploy, bu
    - Who has access: **Anyone**
 4. Copy the **`/exec`** URL (looks like `https://script.google.com/macros/s/…/exec`)
 
-## Step 2 — Paste URL into the site
+## Step 3 — Paste URL into the site
 
 In both `nahrati-fotky.html` and `upload-photos-en.html`, replace:
 
@@ -26,7 +41,7 @@ const APPS_SCRIPT_UPLOAD_URL = 'PASTE_EXEC_URL_AFTER_DEPLOY';
 
 with your `/exec` URL, then commit and push to `main`. GitHub Pages updates in ~1 minute.
 
-## Step 3 — Test
+## Step 4 — Test
 
 1. Open `https://eeesc.github.io/svatba/nahrati-fotky.html`
 2. Pick a small JPEG, optionally fill in “Od koho…”
