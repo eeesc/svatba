@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Fotky — Jonáš &amp; Natálie</title>
+  <title>Sdílení fotek — Jonáš &amp; Natálie</title>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LGG7WZ05FT"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -93,148 +93,6 @@
       max-width: 640px;
       margin: 0 auto;
       padding: 6rem 1.25rem 4rem;
-    }
-
-    .page-wide {
-      max-width: 940px;
-      margin: 0 auto;
-      padding: 6rem 1.5rem 0;
-    }
-
-    .page-wide + .section-break {
-      margin-top: 3rem;
-    }
-
-    .page-heading img {
-      width: clamp(180px, 38vw, 420px);
-      display: block;
-      margin: 0 auto 1.5rem;
-    }
-
-    /* ── GALLERY ─────────────────────────────────────── */
-    .gallery {
-      columns: 3 220px;
-      column-gap: 0.75rem;
-    }
-
-    .gallery-item {
-      break-inside: avoid;
-      margin-bottom: 0.75rem;
-      cursor: zoom-in;
-      overflow: hidden;
-      border-radius: 3px;
-      background: #ffffff;
-    }
-
-    .gallery-item img {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    .drive-gallery-status {
-      text-align: center;
-      color: var(--mid);
-      font-size: 0.98rem;
-      padding: 2rem 1rem;
-    }
-
-    .drive-gallery-status--err {
-      color: #8f2a2a;
-    }
-
-    /* ── SECTION BREAK ───────────────────────────────── */
-    .section-break {
-      max-width: 940px;
-      margin: 4rem auto;
-      padding: 0 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .section-break::before,
-    .section-break::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--grid);
-    }
-
-    .section-break span {
-      color: var(--mid);
-      font-size: 0.88rem;
-      letter-spacing: 0.14em;
-      text-transform: lowercase;
-      white-space: nowrap;
-    }
-
-    /* ── LIGHTBOX ──────────────────────────────────── */
-    .lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      background: rgba(44, 40, 37, 0.93);
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      cursor: zoom-out;
-    }
-
-    .lightbox.open { display: flex; }
-
-    .lightbox img {
-      max-width: 100%;
-      max-height: 92vh;
-      border-radius: 3px;
-      box-shadow: 0 8px 48px rgba(0,0,0,0.5);
-      cursor: default;
-      object-fit: contain;
-    }
-
-    .lightbox-close {
-      position: fixed;
-      top: 1rem; right: 1.25rem;
-      color: rgba(255,255,255,0.7);
-      font-size: 2rem;
-      font-weight: 300;
-      cursor: pointer;
-      line-height: 1;
-      z-index: 100000;
-    }
-
-    .lightbox-prev,
-    .lightbox-next {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      color: rgba(255,255,255,0.6);
-      font-size: 2.5rem;
-      font-weight: 300;
-      cursor: pointer;
-      padding: 1rem;
-      user-select: none;
-      z-index: 100000;
-    }
-
-    .lightbox-prev { left: 0.5rem; }
-    .lightbox-next { right: 0.5rem; }
-
-    .lightbox-counter {
-      position: fixed;
-      bottom: 1.2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.45);
-      font-size: 0.85rem;
-      letter-spacing: 0.08em;
-    }
-
-    @media (max-width: 620px) {
-      .gallery { columns: 2 140px; }
-      .lightbox-prev { left: 0; }
-      .lightbox-next { right: 0; }
     }
 
     .page-heading {
@@ -497,19 +355,6 @@
     <span class="nav-title">jonáš &amp; natálie · fotky</span>
   </nav>
 
-  <div class="page-wide">
-    <div class="page-heading">
-      <img src="jn_alpha.png" alt="jonáš &amp; natálie">
-      <h1>Fotky ze svatby</h1>
-      <p>Fotky od hostů — děkujeme, že je s námi sdílíte.</p>
-    </div>
-
-    <div id="drive-gallery-status" class="drive-gallery-status">Načítám fotky…</div>
-    <div class="gallery" id="drive-gallery"></div>
-  </div>
-
-  <div class="section-break" aria-hidden="true"><span>sdílet fotky</span></div>
-
   <div class="page">
     <div class="page-heading">
       <h1>Sdílejte svoje fotky</h1>
@@ -553,31 +398,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox">
-    <span class="lightbox-close" id="lb-close">×</span>
-    <span class="lightbox-prev" id="lb-prev">‹</span>
-    <img src="" id="lb-img" alt="">
-    <span class="lightbox-next" id="lb-next">›</span>
-    <span class="lightbox-counter" id="lb-counter"></span>
-  </div>
-
-  <script>
-    (function () {
-      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdK_esoaZVUo2zLrKu0k5zYxD3qc0pJ6jKhMbhcP-wcxKD-BRo3unonP8x8OS3YCvinQ/exec';
-
-      window.PHOTO_GALLERY_CONFIG = {
-        listUrl: APPS_SCRIPT_URL + '?action=list',
-        strings: {
-          loading: 'Načítám fotky…',
-          empty: 'Zatím tu nejsou žádné fotky — buďte první!',
-          errLoad: 'Galerii se nepovedlo načíst. Zkuste obnovit stránku.',
-        },
-      };
-    })();
-  </script>
-  <script src="js/drive-gallery.js"></script>
 
   <script>
     (function () {
