@@ -184,19 +184,15 @@
     });
   }
 
-  function compressIfNeeded(file) {
-    const compressible = /^image\/(jpeg|jpg|png|webp)$/i.test(file.type);
-    if (!compressible || file.size < 800 * 1024) {
-      return Promise.resolve(file);
-    }
+  const MAX_UPLOAD_BYTES = 1.4 * 1024 * 1024; // keep JSON payload under ~2 MB
 
+  function compressImage(file, maxDim, quality) {
     return new Promise((resolve) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
 
       img.onload = () => {
         URL.revokeObjectURL(url);
-        const maxDim = 2048;
         let { width, height } = img;
         if (width > maxDim || height > maxDim) {
           if (width >= height) {
@@ -211,8 +207,7 @@
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
         canvas.toBlob(
           (blob) => {
@@ -220,14 +215,16 @@
               resolve(file);
               return;
             }
-            const outType = file.type === 'image/png' ? 'image/jpeg' : file.type;
             const outName = extOf(file.name) === '.png'
               ? file.name.replace(/\.png$/i, '.jpg')
               : file.name;
-            resolve(new File([blob], outName, { type: outType, lastModified: Date.now() }));
+            resolve(new File([blob], outName, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            }));
           },
-          file.type === 'image/png' ? 'image/jpeg' : file.type,
-          0.85
+          'image/jpeg',
+          quality
         );
       };
 
@@ -238,6 +235,45 @@
 
       img.src = url;
     });
+  }
+
+  async function prepareForUpload(file) {
+    const compressible = /^image\/(jpeg|jpg|png|webp)$/i.test(file.type);
+    if (!compressible) {
+      if (file.size > MAX_UPLOAD_BYTES) {
+        throw new Error(
+          t(
+            'errTooLarge',
+            'Fotka je po zmenšení pořád moc velká. Zkuste ji nahrát ručně do Google Drive nebo vybrat menší soubor.'
+          )
+        );
+      }
+      return file;
+    }
+
+    const steps = [
+      { maxDim: 2048, quality: 0.82 },
+      { maxDim: 1600, quality: 0.74 },
+      { maxDim: 1280, quality: 0.66 },
+      { maxDim: 1024, quality: 0.58 },
+    ];
+
+    let current = file;
+    for (const step of steps) {
+      if (current.size <= MAX_UPLOAD_BYTES) return current;
+      current = await compressImage(current, step.maxDim, step.quality);
+    }
+
+    if (current.size > MAX_UPLOAD_BYTES) {
+      throw new Error(
+        t(
+          'errTooLarge',
+          'Fotka je po zmenšení pořád moc velká. Zkuste ji nahrát ručně do Google Drive nebo vybrat menší soubor.'
+        )
+      );
+    }
+
+    return current;
   }
 
   function parseAppsScriptResponse(text) {
@@ -268,7 +304,10 @@
         item.statusText = t('statusPreparing', 'Preparing…');
         renderPreview();
 
-        const prepared = await compressIfNeeded(item.file);
+        item.statusText = t('statusCompressing', 'Zmenšuji fotku…');
+        renderPreview();
+
+        const prepared = await prepareForUpload(item.file);
         item.progress = 20;
         item.statusText = t('statusUploading', 'Uploading…');
         renderPreview();
@@ -284,49 +323,52 @@
           from: uploaderName || '',
         });
 
-        const xhr = new XMLHttpRequest();
+        if (payload.length > 2.5 * 1024 * 1024) {
+          throw new Error(
+            t(
+              'errTooLarge',
+              'Fotka je po zmenšení pořád moc velká. Zkuste ji nahrát ručně do Google Drive nebo vybrat menší soubor.'
+            )
+          );
+        }
+
+        const controller = new AbortController();
         const timeoutMs = 120000;
-        const timer = setTimeout(() => {
-          xhr.abort();
-          reject(new Error(t('errTimeout', 'Upload timed out. Try a smaller photo or better connection.')));
-        }, timeoutMs);
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-        xhr.open('POST', uploadUrl);
-        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-
-        xhr.upload.addEventListener('progress', (e) => {
-          if (!e.lengthComputable) return;
-          item.progress = 35 + Math.round((e.loaded / e.total) * 60);
-          renderPreview();
-        });
-
-        xhr.addEventListener('load', () => {
-          clearTimeout(timer);
-          try {
-            const data = parseAppsScriptResponse(xhr.responseText);
-            if (data && data.success) {
-              item.status = 'done';
-              item.progress = 100;
-              renderPreview();
-              resolve();
-              return;
-            }
-            reject(new Error((data && data.error) || t('errGeneric', 'Upload failed. Please try again.')));
-          } catch (err) {
-            reject(err);
+        let res;
+        try {
+          res = await fetch(uploadUrl, {
+            method: 'POST',
+            body: new Blob([payload], { type: 'text/plain' }),
+            signal: controller.signal,
+          });
+        } catch (err) {
+          if (err && err.name === 'AbortError') {
+            throw new Error(t('errTimeout', 'Upload timed out. Try a smaller photo or better connection.'));
           }
-        });
-
-        xhr.addEventListener('error', () => {
+          throw new Error(
+            t(
+              'errNetwork',
+              'Odeslání fotky se nepovedlo — pravděpodobně je soubor moc velký pro nahrání z prohlížeče. Zkuste menší fotku nebo ruční upload do Google Drive.'
+            )
+          );
+        } finally {
           clearTimeout(timer);
-          reject(new Error(t('errNetwork', 'Network error. Check your connection and try again.')));
-        });
+        }
 
-        xhr.addEventListener('abort', () => {
-          clearTimeout(timer);
-        });
+        item.progress = 90;
+        renderPreview();
 
-        xhr.send(payload);
+        const data = parseAppsScriptResponse(await res.text());
+        if (data && data.success) {
+          item.status = 'done';
+          item.progress = 100;
+          renderPreview();
+          resolve();
+          return;
+        }
+        reject(new Error((data && data.error) || t('errGeneric', 'Upload failed. Please try again.')));
       } catch (err) {
         reject(err);
       }
