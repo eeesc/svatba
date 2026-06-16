@@ -16,8 +16,14 @@
     'image/heic',
     'image/heif',
     'image/webp',
+    'video/mp4',
+    'video/quicktime',
+    'video/webm',
+    'video/3gpp',
+    'video/x-msvideo',
   ];
   const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.webp'];
+  const VIDEO_EXT = ['.mp4', '.mov', '.m4v', '.webm', '.3gp', '.avi'];
 
   const root = document.getElementById('photo-upload');
   if (!root) return;
@@ -46,12 +52,24 @@
     return i === -1 ? '' : name.slice(i).toLowerCase();
   }
 
+  function isVideoFile(file) {
+    const mime = (file.type || '').toLowerCase();
+    const ext = extOf(file.name);
+    if (mime.startsWith('video/')) return true;
+    if (VIDEO_EXT.includes(ext)) return true;
+    if (mime === 'application/octet-stream' && VIDEO_EXT.includes(ext)) return true;
+    return false;
+  }
+
   function isAllowedFile(file) {
     const mime = (file.type || '').toLowerCase();
     const ext = extOf(file.name);
     if (ALLOWED_TYPES.includes(mime)) return true;
     if (ALLOWED_EXT.includes(ext)) return true;
-    if (mime === 'application/octet-stream' && ALLOWED_EXT.includes(ext)) return true;
+    if (VIDEO_EXT.includes(ext)) return true;
+    if (mime === 'application/octet-stream' && (ALLOWED_EXT.includes(ext) || VIDEO_EXT.includes(ext))) {
+      return true;
+    }
     return false;
   }
 
@@ -118,6 +136,13 @@
         const url = URL.createObjectURL(item.file);
         img.src = url;
         img.onload = () => URL.revokeObjectURL(url);
+      } else if (isVideoFile(item.file)) {
+        thumb.classList.add('pu-thumb--video');
+        const label = document.createElement('span');
+        label.className = 'pu-thumb-play';
+        label.setAttribute('aria-hidden', 'true');
+        label.textContent = '▶';
+        thumb.appendChild(label);
       }
 
       const meta = document.createElement('div');
@@ -238,6 +263,18 @@
   }
 
   async function prepareForUpload(file) {
+    if (isVideoFile(file)) {
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(
+          t(
+            'errVideoTooLarge',
+            'Video je větší než 20 MB. Zkuste kratší klip, nebo ho nahrajte ručně do Google Drive.'
+          )
+        );
+      }
+      return file;
+    }
+
     const compressible = /^image\/(jpeg|jpg|png|webp)$/i.test(file.type);
     if (!compressible) {
       if (file.size > MAX_UPLOAD_BYTES) {
@@ -304,7 +341,9 @@
         item.statusText = t('statusPreparing', 'Preparing…');
         renderPreview();
 
-        item.statusText = t('statusCompressing', 'Zmenšuji fotku…');
+        item.statusText = isVideoFile(item.file)
+          ? t('statusUploading', 'Uploading…')
+          : t('statusCompressing', 'Zmenšuji fotku…');
         renderPreview();
 
         const prepared = await prepareForUpload(item.file);
@@ -460,7 +499,7 @@
 
     uploadBtn.disabled = false;
     if (failed) {
-      showError(t('errPartial', 'Some photos did not upload. Remove failed ones or try again.'));
+      showError(t('errPartial', 'Some files did not upload. Remove failed ones or try again.'));
     }
   }
 

@@ -5,7 +5,7 @@
   const listUrl = cfg.listUrl || '';
   const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
   const embedFolderId = cfg.embedFolderId || '';
-  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v2';
+  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v3';
   const cacheTtlMs = cfg.cacheTtlMs || 10 * 60 * 1000;
   const eagerCount = cfg.eagerCount || 6;
   const strings = cfg.strings || {};
@@ -18,28 +18,52 @@
   function initLightbox(container) {
     const lb = document.getElementById('lightbox');
     const lbImg = document.getElementById('lb-img');
+    const lbIframe = document.getElementById('lb-iframe');
     const lbCount = document.getElementById('lb-counter');
     if (!lb || !lbImg) return;
 
     let current = 0;
-    const lightboxItems = Array.from(container.querySelectorAll('.gallery-item img'));
+    const lightboxItems = Array.from(container.querySelectorAll('.gallery-item'));
+
+    function resetMedia() {
+      lbImg.hidden = true;
+      lbImg.removeAttribute('src');
+      if (lbIframe) {
+        lbIframe.hidden = true;
+        lbIframe.removeAttribute('src');
+      }
+    }
 
     function open(idx) {
       if (!lightboxItems.length) return;
       current = (idx + lightboxItems.length) % lightboxItems.length;
-      lbImg.src = lightboxItems[current].dataset.full || lightboxItems[current].src;
+      const item = lightboxItems[current];
+      const type = item.dataset.type || 'image';
+      const full = item.dataset.full || '';
+
+      resetMedia();
+
+      if (type === 'video' && lbIframe && full) {
+        lbIframe.hidden = false;
+        lbIframe.src = full;
+      } else {
+        lbImg.hidden = false;
+        lbImg.src = full || item.querySelector('img')?.src || '';
+      }
+
       if (lbCount) lbCount.textContent = (current + 1) + ' / ' + lightboxItems.length;
       lb.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
 
     function close() {
+      resetMedia();
       lb.classList.remove('open');
       document.body.style.overflow = '';
     }
 
-    lightboxItems.forEach(function (img, i) {
-      img.parentElement.addEventListener('click', function () { open(i); });
+    lightboxItems.forEach(function (item, i) {
+      item.addEventListener('click', function () { open(i); });
     });
 
     const closeBtn = document.getElementById('lb-close');
@@ -49,7 +73,9 @@
     if (closeBtn) closeBtn.onclick = close;
     if (prevBtn) prevBtn.onclick = function (e) { e.stopPropagation(); open(current - 1); };
     if (nextBtn) nextBtn.onclick = function (e) { e.stopPropagation(); open(current + 1); };
-    lb.onclick = function (e) { if (e.target === lb) close(); };
+    lb.onclick = function (e) {
+      if (e.target === lb || e.target === lbIframe) close();
+    };
 
     document.addEventListener('keydown', function (e) {
       if (!lb.classList.contains('open')) return;
@@ -59,10 +85,12 @@
     });
 
     let swipeX = 0;
-    lbImg.addEventListener('touchstart', function (e) {
+    lb.addEventListener('touchstart', function (e) {
+      if (e.target !== lbImg && e.target !== lb) return;
       swipeX = e.touches[0].clientX;
     }, { passive: true });
-    lbImg.addEventListener('touchend', function (e) {
+    lb.addEventListener('touchend', function (e) {
+      if (e.target !== lbImg && e.target !== lb) return;
       const dx = e.changedTouches[0].clientX - swipeX;
       if (Math.abs(dx) > 40) dx < 0 ? open(current + 1) : open(current - 1);
     });
@@ -174,12 +202,14 @@
     setStatus('', false);
 
     photos.forEach(function (photo, index) {
+      const isVideo = photo.type === 'video';
       const item = document.createElement('div');
-      item.className = 'gallery-item';
+      item.className = 'gallery-item' + (isVideo ? ' gallery-item--video' : '');
+      item.dataset.type = isVideo ? 'video' : 'image';
+      item.dataset.full = photo.full || '';
 
       const img = document.createElement('img');
       img.src = photo.thumb;
-      img.dataset.full = photo.full;
       img.alt = photo.name || '';
       img.decoding = 'async';
       if (index >= eagerCount) img.loading = 'lazy';

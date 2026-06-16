@@ -379,11 +379,15 @@
           <div id="pu-error" class="pu-error" hidden role="alert"></div>
 
           <div id="pu-dropzone" class="pu-dropzone">
-            <p>Přetáhněte fotky sem<br>nebo</p>
-            <button type="button" id="pu-choose-btn" class="pu-choose-btn">Vybrat fotky</button>
-            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP · max. 20 MB na soubor</p>
+            <p>Přetáhněte fotky nebo krátká videa sem<br>nebo</p>
+            <button type="button" id="pu-choose-btn" class="pu-choose-btn">Vybrat soubory</button>
+            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP, MP4, MOV, WebM · max. 20 MB na soubor</p>
           </div>
-          <input type="file" id="pu-file-input" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif" multiple>
+          <input
+            type="file"
+            id="pu-file-input"
+            accept="image/jpeg,image/png,image/heic,image/heif,image/webp,video/mp4,video/quicktime,video/webm,video/3gpp,video/x-msvideo,.heic,.heif,.mp4,.mov,.m4v,.webm,.3gp,.avi"
+            multiple>
 
           <div class="pu-field">
             <label for="pu-from">Od koho jsou fotky? (nepovinné)</label>

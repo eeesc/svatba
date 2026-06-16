@@ -379,11 +379,15 @@
           <div id="pu-error" class="pu-error" hidden role="alert"></div>
 
           <div id="pu-dropzone" class="pu-dropzone">
-            <p>Drop photos here<br>or</p>
-            <button type="button" id="pu-choose-btn" class="pu-choose-btn">Choose photos</button>
-            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP · max 20 MB per file</p>
+            <p>Drop photos or short videos here<br>or</p>
+            <button type="button" id="pu-choose-btn" class="pu-choose-btn">Choose files</button>
+            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP, MP4, MOV, WebM · max 20 MB per file</p>
           </div>
-          <input type="file" id="pu-file-input" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,.heic,.heif" multiple>
+          <input
+            type="file"
+            id="pu-file-input"
+            accept="image/jpeg,image/png,image/heic,image/heif,image/webp,video/mp4,video/quicktime,video/webm,video/3gpp,video/x-msvideo,.heic,.heif,.mp4,.mov,.m4v,.webm,.3gp,.avi"
+            multiple>
 
           <div class="pu-field">
             <label for="pu-from">Who are these photos from? (optional)</label>

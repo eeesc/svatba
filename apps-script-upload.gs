@@ -32,6 +32,23 @@ const ALLOWED_EXT = {
   '.webp': true,
 };
 
+const ALLOWED_VIDEO_MIME = {
+  'video/mp4': true,
+  'video/quicktime': true,
+  'video/webm': true,
+  'video/3gpp': true,
+  'video/x-msvideo': true,
+};
+
+const ALLOWED_VIDEO_EXT = {
+  '.mp4': true,
+  '.mov': true,
+  '.m4v': true,
+  '.webm': true,
+  '.3gp': true,
+  '.avi': true,
+};
+
 function doOptions() {
   return ContentService.createTextOutput('');
 }
@@ -94,10 +111,10 @@ function doPost(e) {
       return json_({ success: false, error: 'Missing file data.' });
     }
 
-    if (!isAllowedImage_(fileName, mimeType)) {
+    if (!isAllowedUpload_(fileName, mimeType)) {
       return json_({
         success: false,
-        error: 'Unsupported format. Use JPEG, PNG, HEIC, or WebP.',
+        error: 'Unsupported format. Use JPEG, PNG, HEIC, WebP, MP4, MOV, or WebM.',
       });
     }
 
@@ -176,6 +193,24 @@ function isAllowedImage_(fileName, mimeType) {
   return false;
 }
 
+function isAllowedVideo_(fileName, mimeType) {
+  const mime = mimeType.toLowerCase();
+  const ext = extOf_(fileName);
+  if (ALLOWED_VIDEO_MIME[mime]) return true;
+  if (ALLOWED_VIDEO_EXT[ext]) return true;
+  if (mime === 'application/octet-stream' && ALLOWED_VIDEO_EXT[ext]) return true;
+  return false;
+}
+
+function isAllowedUpload_(fileName, mimeType) {
+  return isAllowedImage_(fileName, mimeType) || isAllowedVideo_(fileName, mimeType);
+}
+
+function isGalleryVideo_(fileName, mimeType) {
+  if (isAllowedVideo_(fileName, mimeType)) return true;
+  return /^video\//.test((mimeType || '').toLowerCase());
+}
+
 function sanitizeName_(name) {
   const trimmed = safe_(name);
   if (!trimmed) return '';
@@ -197,7 +232,7 @@ function buildFilename_(originalName, uploaderName) {
   return safeName + '_' + base.slice(0, dot) + base.slice(dot);
 }
 
-const GALLERY_CACHE_KEY = 'gallery_list_v2';
+const GALLERY_CACHE_KEY = 'gallery_list_v3';
 const GALLERY_CACHE_SEC = 300;
 
 function listGalleryPhotos_() {
@@ -225,13 +260,28 @@ function buildGalleryList_() {
     if (shouldSkipGalleryFile_(name)) continue;
 
     const mime = file.getMimeType();
-    if (!isAllowedImage_(name, mime) && !/^image\//.test(mime)) continue;
+    const isVideo = isGalleryVideo_(name, mime);
+    if (!isAllowedImage_(name, mime) && !isVideo && !/^image\//.test(mime)) continue;
 
     const id = file.getId();
     makeFileViewable_(file);
+
+    if (isVideo) {
+      photos.push({
+        id: id,
+        name: name,
+        type: 'video',
+        thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
+        full: 'https://drive.google.com/file/d/' + id + '/preview',
+        created: file.getDateCreated().toISOString(),
+      });
+      continue;
+    }
+
     photos.push({
       id: id,
       name: name,
+      type: 'image',
       thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
       full: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1920',
       created: file.getDateCreated().toISOString(),
