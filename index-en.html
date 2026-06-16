@@ -14,6 +14,8 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://drive.google.com">
+  <link rel="preconnect" href="https://script.google.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -694,6 +696,12 @@
       display: block;
       width: 100%;
       height: auto;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .gallery-item img.is-loaded {
+      opacity: 1;
     }
 
     .drive-gallery-status {
@@ -1179,8 +1187,9 @@
   <script>
     (function () {
       const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdK_esoaZVUo2zLrKu0k5zYxD3qc0pJ6jKhMbhcP-wcxKD-BRo3unonP8x8OS3YCvinQ/exec';
+      const listUrl = APPS_SCRIPT_URL + '?action=list';
       window.PHOTO_GALLERY_CONFIG = {
-        listUrl: APPS_SCRIPT_URL + '?action=list',
+        listUrl: listUrl,
         embedFolderId: '1n7GYR_Vjrfv2T2DYal5X1GUFh5c5uFSb',
         strings: {
           loading: 'Loading photos…',
@@ -1189,6 +1198,9 @@
           errStale: 'The gallery needs an updated Apps Script deploy. Paste apps-script-upload.gs and publish a new web app version.',
         },
       };
+      window.__galleryListPromise = fetch(listUrl).then(function (res) {
+        return res.text();
+      });
     })();
   </script>
   <script src="js/drive-gallery.js"></script>

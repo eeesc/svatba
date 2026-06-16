@@ -5,6 +5,9 @@
   const listUrl = cfg.listUrl || '';
   const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
   const embedFolderId = cfg.embedFolderId || '';
+  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v1';
+  const cacheTtlMs = cfg.cacheTtlMs || 10 * 60 * 1000;
+  const eagerCount = cfg.eagerCount || 6;
   const strings = cfg.strings || {};
   const t = (key, fallback) => strings[key] || fallback;
 
@@ -80,11 +83,44 @@
     return JSON.parse(trimmed);
   }
 
-  async function fetchPhotosGet() {
+  function readCache() {
+    try {
+      const raw = sessionStorage.getItem(cacheKey);
+      if (!raw) return null;
+      const entry = JSON.parse(raw);
+      if (!entry || !Array.isArray(entry.photos) || Date.now() - entry.ts > cacheTtlMs) {
+        return null;
+      }
+      return entry.photos;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCache(photos) {
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), photos: photos }));
+    } catch (_) {}
+  }
+
+  function clearCache() {
+    try {
+      sessionStorage.removeItem(cacheKey);
+    } catch (_) {}
+  }
+
+  function photoIds(photos) {
+    return photos.map(function (p) { return p.id; }).join(',');
+  }
+
+  async function fetchListText() {
+    if (window.__galleryListPromise) {
+      const text = await window.__galleryListPromise;
+      window.__galleryListPromise = null;
+      return text;
+    }
     const res = await fetch(listUrl);
-    const data = parseJson(await res.text());
-    if (Array.isArray(data.photos)) return data.photos;
-    return null;
+    return res.text();
   }
 
   async function fetchPhotosPost() {
@@ -106,9 +142,11 @@
   }
 
   async function fetchPhotos() {
+    let text = '';
     try {
-      const fromGet = await fetchPhotosGet();
-      if (fromGet && fromGet.length) return fromGet;
+      text = await fetchListText();
+      const data = parseJson(text);
+      if (Array.isArray(data.photos)) return data.photos;
     } catch (_) {}
 
     return fetchPhotosPost();
@@ -135,7 +173,7 @@
 
     setStatus('', false);
 
-    photos.forEach(function (photo) {
+    photos.forEach(function (photo, index) {
       const item = document.createElement('div');
       item.className = 'gallery-item';
 
@@ -143,7 +181,13 @@
       img.src = photo.thumb;
       img.dataset.full = photo.full;
       img.alt = photo.name || '';
-      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.loading = index < eagerCount ? 'eager' : 'lazy';
+      if (index < eagerCount) img.setAttribute('fetchpriority', 'high');
+      img.addEventListener('load', function () {
+        img.classList.add('is-loaded');
+      }, { once: true });
+      if (img.complete) img.classList.add('is-loaded');
 
       item.appendChild(img);
       galleryEl.appendChild(item);
@@ -153,13 +197,22 @@
   }
 
   async function loadGallery() {
-    setStatus(t('loading', 'Načítám fotky…'), false);
-    galleryEl.innerHTML = '';
+    const cached = readCache();
+    if (cached && cached.length) {
+      renderPhotos(cached);
+    } else {
+      setStatus(t('loading', 'Načítám fotky…'), false);
+      galleryEl.innerHTML = '';
+    }
 
     try {
       const photos = await fetchPhotos();
-      renderPhotos(photos);
+      writeCache(photos);
+      if (!cached || photoIds(cached) !== photoIds(photos)) {
+        renderPhotos(photos);
+      }
     } catch (err) {
+      if (cached && cached.length) return;
       if (!showEmbedFallback()) {
         setStatus(err.message || t('errLoad', 'Galerii se nepovedlo načíst.'), true);
       }
@@ -167,5 +220,8 @@
   }
 
   loadGallery();
-  window.addEventListener('photo-upload:success', loadGallery);
+  window.addEventListener('photo-upload:success', function () {
+    clearCache();
+    loadGallery();
+  });
 })();

@@ -111,6 +111,7 @@ function doPost(e) {
     const folder = DriveApp.getFolderById(FOLDER_ID);
     const file = folder.createFile(blob);
     makeFileViewable_(file);
+    invalidateGalleryCache_();
 
     return json_({
       success: true,
@@ -196,7 +197,24 @@ function buildFilename_(originalName, uploaderName) {
   return safeName + '_' + base.slice(0, dot) + base.slice(dot);
 }
 
+const GALLERY_CACHE_KEY = 'gallery_list_v1';
+const GALLERY_CACHE_SEC = 300;
+
 function listGalleryPhotos_() {
+  const cache = CacheService.getScriptCache();
+  try {
+    const cached = cache.get(GALLERY_CACHE_KEY);
+    if (cached) return JSON.parse(cached);
+  } catch (_) {}
+
+  const result = buildGalleryList_();
+  try {
+    cache.put(GALLERY_CACHE_KEY, JSON.stringify(result), GALLERY_CACHE_SEC);
+  } catch (_) {}
+  return result;
+}
+
+function buildGalleryList_() {
   const folder = DriveApp.getFolderById(FOLDER_ID);
   const iterator = folder.getFiles();
   const photos = [];
@@ -210,11 +228,10 @@ function listGalleryPhotos_() {
     if (!isAllowedImage_(name, mime) && !/^image\//.test(mime)) continue;
 
     const id = file.getId();
-    makeFileViewable_(file);
     photos.push({
       id: id,
       name: name,
-      thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
+      thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
       full: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1920',
       created: file.getDateCreated().toISOString(),
     });
@@ -225,6 +242,12 @@ function listGalleryPhotos_() {
   });
 
   return { ok: true, count: photos.length, photos: photos };
+}
+
+function invalidateGalleryCache_() {
+  try {
+    CacheService.getScriptCache().remove(GALLERY_CACHE_KEY);
+  } catch (_) {}
 }
 
 function shouldSkipGalleryFile_(name) {
