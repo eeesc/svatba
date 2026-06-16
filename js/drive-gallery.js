@@ -5,7 +5,7 @@
   const listUrl = cfg.listUrl || '';
   const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
   const embedFolderId = cfg.embedFolderId || '';
-  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v4';
+  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v5';
   const cacheTtlMs = cfg.cacheTtlMs || 2 * 60 * 1000;
   const eagerCount = cfg.eagerCount || 6;
   const strings = cfg.strings || {};
@@ -17,12 +17,28 @@
 
   let refreshTimer = 0;
 
+  function formatUploaderLabel(safeName) {
+    if (!safeName) return '';
+    if (/^(test|perm-test|permission-test|_svatba_upload_test)/i.test(safeName)) return '';
+    if (!/[a-zA-Z\u00C0-\u024F]/.test(safeName)) return '';
+    const label = safeName.replace(/_/g, ' ').trim();
+    if (label.length < 2) return '';
+    return label;
+  }
+
   function parseUploaderFromFilename(name) {
     const base = (name || '').replace(/^.*[\\/]/, '').trim();
     if (!base) return '';
 
     const dot = base.lastIndexOf('.');
     const stem = dot === -1 ? base : base.slice(0, dot);
+
+    const delim = stem.indexOf('__');
+    if (delim > 0) {
+      const label = formatUploaderLabel(stem.slice(0, delim));
+      if (label) return label;
+    }
+
     const patterns = [
       /^(.+)_(IMG_\d+)$/i,
       /^(.+)_(DSC\d+)$/i,
@@ -33,15 +49,14 @@
       /^(.+)_(20\d{12}.*)$/i,
       /^(.+)_(RPReplay_Final\d+.*)$/i,
       /^(.+)_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+      /^(.+)_(\d{5,}(?:-\d+)?)$/,
     ];
 
     for (let i = 0; i < patterns.length; i++) {
       const match = stem.match(patterns[i]);
       if (!match) continue;
-      const safeName = match[1];
-      if (!safeName || /^(test|perm-test|permission-test)/i.test(safeName)) return '';
-      if (!/[a-zA-Z\u00C0-\u024F]/.test(safeName)) return '';
-      return safeName.replace(/_/g, ' ').trim();
+      const label = formatUploaderLabel(match[1]);
+      if (label) return label;
     }
 
     return '';

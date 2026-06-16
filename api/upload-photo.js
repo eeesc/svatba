@@ -136,11 +136,11 @@ function buildDriveFilename(originalName, uploaderName) {
   if (!safeName) return base;
 
   const dot = base.lastIndexOf('.');
-  if (dot === -1) return `${safeName}_${base}`;
+  if (dot === -1) return `${safeName}__${base}`;
 
   const stem = base.slice(0, dot);
   const ext = base.slice(dot);
-  return `${safeName}_${stem}${ext}`;
+  return `${safeName}__${stem}${ext}`;
 }
 
 function parseMultipart(req) {

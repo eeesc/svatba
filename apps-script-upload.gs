@@ -236,8 +236,8 @@ function buildFilename_(originalName, uploaderName) {
   if (!safeName) return base;
 
   const dot = base.lastIndexOf('.');
-  if (dot === -1) return safeName + '_' + base;
-  return safeName + '_' + base.slice(0, dot) + base.slice(dot);
+  if (dot === -1) return safeName + '__' + base;
+  return safeName + '__' + base.slice(0, dot) + base.slice(dot);
 }
 
 function parseUploaderFromFilename_(fileName) {
@@ -246,6 +246,13 @@ function parseUploaderFromFilename_(fileName) {
 
   const dot = base.lastIndexOf('.');
   const stem = dot === -1 ? base : base.slice(0, dot);
+
+  const delim = stem.indexOf('__');
+  if (delim > 0) {
+    const label = formatUploaderLabel_(stem.slice(0, delim));
+    if (label) return label;
+  }
+
   const patterns = [
     /^(.+)_(IMG_\d+)$/i,
     /^(.+)_(DSC\d+)$/i,
@@ -256,11 +263,15 @@ function parseUploaderFromFilename_(fileName) {
     /^(.+)_(20\d{12}.*)$/i,
     /^(.+)_(RPReplay_Final\d+.*)$/i,
     /^(.+)_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+    /^(.+)_(\d{5,}(?:-\d+)?)$/,
   ];
 
   for (var i = 0; i < patterns.length; i++) {
     var match = stem.match(patterns[i]);
-    if (match) return formatUploaderLabel_(match[1]);
+    if (match) {
+      var label = formatUploaderLabel_(match[1]);
+      if (label) return label;
+    }
   }
 
   return '';
