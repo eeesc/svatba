@@ -42,6 +42,7 @@
       const full = item.dataset.full || '';
 
       resetMedia();
+      lb.classList.toggle('lightbox--video', type === 'video');
 
       if (type === 'video' && lbIframe && full) {
         lbIframe.hidden = false;
@@ -58,6 +59,7 @@
 
     function close() {
       resetMedia();
+      lb.classList.remove('lightbox--video');
       lb.classList.remove('open');
       document.body.style.overflow = '';
     }
@@ -74,7 +76,7 @@
     if (prevBtn) prevBtn.onclick = function (e) { e.stopPropagation(); open(current - 1); };
     if (nextBtn) nextBtn.onclick = function (e) { e.stopPropagation(); open(current + 1); };
     lb.onclick = function (e) {
-      if (e.target === lb || e.target === lbIframe) close();
+      if (e.target === lb) close();
     };
 
     document.addEventListener('keydown', function (e) {
