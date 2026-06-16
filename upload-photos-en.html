@@ -357,8 +357,8 @@
 
   <div class="page">
     <div class="page-heading">
-      <h1>Share your photos</h1>
-      <p>Got pictures from the wedding or the lead-up? Send them our way — we'd love to see them.</p>
+      <h1>Share your photos &amp; videos</h1>
+      <p>Got memories from the wedding or the lead-up? Send them our way — we'd love to see them.</p>
     </div>
 
     <div id="photo-upload">
@@ -368,20 +368,21 @@
 
       <div id="pu-upload-panel">
         <div class="pu-card pu-manual">
-          <h2>Or upload directly to the folder</h2>
-          <p>If you prefer Google Drive, you can add photos manually to our shared folder:</p>
+          <h2>Videos — best via Google Drive</h2>
+          <p>For videos (especially longer clips), we recommend uploading directly to our shared folder — it's more reliable than the form below. You can add photos there too:</p>
           <p style="margin-top:0.6rem"><a id="pu-drive-link" href="#" target="_blank" rel="noopener">Open folder on Google Drive</a></p>
         </div>
 
-        <p class="pu-divider">— or upload here —</p>
+        <p class="pu-divider">— or upload photos here —</p>
 
         <div class="pu-card">
           <div id="pu-error" class="pu-error" hidden role="alert"></div>
 
           <div id="pu-dropzone" class="pu-dropzone">
-            <p>Drop photos or short videos here<br>or</p>
+            <p>Drop photos here<br>or</p>
             <button type="button" id="pu-choose-btn" class="pu-choose-btn">Choose files</button>
-            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP, MP4, MOV, WebM · max 20 MB per file</p>
+            <p style="font-size:0.85rem">Photos: JPEG, PNG, HEIC, WebP · max 20 MB<br>Short videos: MP4, MOV, WebM · max 40 MB</p>
+            <p style="font-size:0.8rem; margin-top:0.55rem; color:var(--mid)">For longer or larger videos, please use the folder above.</p>
           </div>
           <input
             type="file"
@@ -397,7 +398,7 @@
 
           <div id="pu-preview-list" class="pu-preview-list"></div>
 
-          <button type="button" id="pu-upload-btn" class="pu-upload-btn" disabled>Upload photos</button>
+          <button type="button" id="pu-upload-btn" class="pu-upload-btn" disabled>Upload</button>
         </div>
       </div>
     </div>
@@ -419,13 +420,14 @@
         uploadMode: onGithubPages && appsScriptReady ? 'apps-script' : 'multipart',
         driveFolderUrl: 'https://drive.google.com/drive/folders/1n7GYR_Vjrfv2T2DYal5X1GUFh5c5uFSb',
         strings: {
-          errRejected: 'Some files were skipped (unsupported format or over 20 MB): ',
+          errRejected: 'Some files were skipped (unsupported format or over the size limit): ',
           errGeneric: 'Upload failed. Please try again.',
-          errNetwork: 'Upload failed — the file is probably too large to send from the browser. Try a smaller photo or manual Google Drive upload.',
-          errPartial: 'Some photos did not upload. Remove failed ones or try again.',
+          errNetwork: 'Upload failed — the file is probably too large. Try a smaller file or upload manually to Google Drive.',
+          errPartial: 'Some files did not upload. Remove failed ones or try again.',
           errAccess: 'Upload server is not public. Redeploy the Apps Script web app with access set to Anyone.',
-          errTimeout: 'Upload timed out. Try a smaller photo or better connection.',
+          errTimeout: 'Upload timed out. Try a smaller file, a better connection, or manual Google Drive upload.',
           errTooLarge: 'Photo is still too large after resizing. Upload it manually to Google Drive or pick a smaller file.',
+          errVideoTooLarge: 'Video is larger than 40 MB. For longer videos, please upload manually to Google Drive.',
           statusPreparing: 'Preparing…',
           statusCompressing: 'Resizing photo…',
           statusDone: 'Uploaded',

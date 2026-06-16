@@ -13,7 +13,8 @@
  */
 
 const FOLDER_ID = '1n7GYR_Vjrfv2T2DYal5X1GUFh5c5uFSb';
-const MAX_FILE_BYTES = 20 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 40 * 1024 * 1024;
 
 const ALLOWED_MIME = {
   'image/jpeg': true,
@@ -119,8 +120,10 @@ function doPost(e) {
     }
 
     const bytes = Utilities.base64Decode(fileData);
-    if (bytes.length > MAX_FILE_BYTES) {
-      return json_({ success: false, error: 'File is larger than 20 MB.' });
+    const maxBytes = maxUploadBytes_(fileName, mimeType);
+    if (bytes.length > maxBytes) {
+      const limitMb = isAllowedVideo_(fileName, mimeType) ? 40 : 20;
+      return json_({ success: false, error: 'File is larger than ' + limitMb + ' MB.' });
     }
 
     const storedAs = buildFilename_(fileName, from);
@@ -204,6 +207,11 @@ function isAllowedVideo_(fileName, mimeType) {
 
 function isAllowedUpload_(fileName, mimeType) {
   return isAllowedImage_(fileName, mimeType) || isAllowedVideo_(fileName, mimeType);
+}
+
+function maxUploadBytes_(fileName, mimeType) {
+  if (isAllowedVideo_(fileName, mimeType)) return MAX_VIDEO_BYTES;
+  return MAX_IMAGE_BYTES;
 }
 
 function isGalleryVideo_(fileName, mimeType) {

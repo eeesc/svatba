@@ -2,7 +2,8 @@ const { Readable } = require('stream');
 const Busboy = require('busboy');
 const { google } = require('googleapis');
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 40 * 1024 * 1024;
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
@@ -10,6 +11,11 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/heic',
   'image/heif',
   'image/webp',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
+  'video/3gpp',
+  'video/x-msvideo',
 ]);
 
 const ALLOWED_EXTENSIONS = new Set([
@@ -19,6 +25,12 @@ const ALLOWED_EXTENSIONS = new Set([
   '.heic',
   '.heif',
   '.webp',
+  '.mp4',
+  '.mov',
+  '.m4v',
+  '.webm',
+  '.3gp',
+  '.avi',
 ]);
 
 function jsonResponse(res, status, payload) {
@@ -92,6 +104,17 @@ function isAllowedImage(filename, mimeType) {
   return false;
 }
 
+function isVideoFile(filename, mimeType) {
+  const ext = getExtension(filename);
+  const normalizedMime = (mimeType || '').toLowerCase();
+  if (normalizedMime.startsWith('video/')) return true;
+  return ['.mp4', '.mov', '.m4v', '.webm', '.3gp', '.avi'].includes(ext);
+}
+
+function maxFileSize(filename, mimeType) {
+  return isVideoFile(filename, mimeType) ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+}
+
 function sanitizeUploaderName(name) {
   const trimmed = String(name || '').trim();
   if (!trimmed) return '';
@@ -132,7 +155,7 @@ function parseMultipart(req) {
       headers: req.headers,
       limits: {
         files: 20,
-        fileSize: MAX_FILE_SIZE,
+        fileSize: MAX_VIDEO_SIZE,
       },
     });
 
@@ -153,7 +176,8 @@ function parseMultipart(req) {
 
       fileStream.on('data', (chunk) => {
         size += chunk.length;
-        if (size > MAX_FILE_SIZE) {
+        const limit = maxFileSize(filename, mimeType);
+        if (size > limit) {
           tooLarge = true;
           fileStream.resume();
           return;
@@ -167,8 +191,9 @@ function parseMultipart(req) {
 
       fileStream.on('end', () => {
         if (tooLarge) {
+          const limitMb = isVideoFile(filename, mimeType) ? 40 : 20;
           files.push({
-            error: `Soubor „${filename}“ je větší než 20 MB.`,
+            error: `Soubor „${filename}“ je větší než ${limitMb} MB.`,
           });
           return;
         }
@@ -258,7 +283,7 @@ module.exports = async function handler(req, res) {
     if (!isAllowedImage(file.filename, file.mimeType)) {
       jsonResponse(res, 400, {
         success: false,
-        error: `Nepodporovaný formát: ${file.filename}. Použijte JPEG, PNG, HEIC nebo WebP.`,
+        error: `Nepodporovaný formát: ${file.filename}. Použijte JPEG, PNG, HEIC, WebP, MP4, MOV nebo WebM.`,
       });
       return;
     }

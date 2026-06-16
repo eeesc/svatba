@@ -9,7 +9,10 @@
 
   const t = (key, fallback) => strings[key] || fallback;
 
-  const MAX_FILE_SIZE = 20 * 1024 * 1024;
+  const MAX_IMAGE_SIZE = 20 * 1024 * 1024;
+  const MAX_VIDEO_SIZE = 40 * 1024 * 1024;
+  const MAX_IMAGE_PAYLOAD = 2.5 * 1024 * 1024;
+  const MAX_VIDEO_PAYLOAD = 54 * 1024 * 1024;
   const ALLOWED_TYPES = [
     'image/jpeg',
     'image/png',
@@ -73,6 +76,14 @@
     return false;
   }
 
+  function maxFileSize(file) {
+    return isVideoFile(file) ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+  }
+
+  function maxFileSizeLabel(file) {
+    return isVideoFile(file) ? '40 MB' : '20 MB';
+  }
+
   function showError(message) {
     globalError.textContent = message;
     globalError.hidden = !message;
@@ -92,8 +103,8 @@
         rejected.push(file.name);
         return;
       }
-      if (file.size > MAX_FILE_SIZE) {
-        rejected.push(file.name + ' (>20 MB)');
+      if (file.size > maxFileSize(file)) {
+        rejected.push(file.name + ' (>' + maxFileSizeLabel(file) + ')');
         return;
       }
       const key = fileKey(file);
@@ -109,7 +120,7 @@
 
     if (rejected.length) {
       showError(
-        t('errRejected', 'Some files were skipped (unsupported format or over 20 MB): ') +
+        t('errRejected', 'Some files were skipped (unsupported format or over the size limit): ') +
           rejected.join(', ')
       );
     }
@@ -264,11 +275,11 @@
 
   async function prepareForUpload(file) {
     if (isVideoFile(file)) {
-      if (file.size > MAX_FILE_SIZE) {
+      if (file.size > MAX_VIDEO_SIZE) {
         throw new Error(
           t(
             'errVideoTooLarge',
-            'Video je větší než 20 MB. Zkuste kratší klip, nebo ho nahrajte ručně do Google Drive.'
+            'Video je větší než 40 MB. Delší videa prosím nahrajte ručně do Google Drive.'
           )
         );
       }
@@ -362,17 +373,23 @@
           from: uploaderName || '',
         });
 
-        if (payload.length > 2.5 * 1024 * 1024) {
+        const maxPayload = isVideoFile(prepared) ? MAX_VIDEO_PAYLOAD : MAX_IMAGE_PAYLOAD;
+        if (payload.length > maxPayload) {
           throw new Error(
-            t(
-              'errTooLarge',
-              'Fotka je po zmenšení pořád moc velká. Zkuste ji nahrát ručně do Google Drive nebo vybrat menší soubor.'
-            )
+            isVideoFile(prepared)
+              ? t(
+                  'errVideoTooLarge',
+                  'Video je větší než 40 MB. Delší videa prosím nahrajte ručně do Google Drive.'
+                )
+              : t(
+                  'errTooLarge',
+                  'Fotka je po zmenšení pořád moc velká. Zkuste ji nahrát ručně do Google Drive nebo vybrat menší soubor.'
+                )
           );
         }
 
         const controller = new AbortController();
-        const timeoutMs = 120000;
+        const timeoutMs = isVideoFile(prepared) ? 300000 : 120000;
         const timer = setTimeout(() => controller.abort(), timeoutMs);
 
         let res;

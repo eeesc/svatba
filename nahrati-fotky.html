@@ -357,8 +357,8 @@
 
   <div class="page">
     <div class="page-heading">
-      <h1>Sdílejte svoje fotky</h1>
-      <p>Máte fotky ze svatby nebo příprav? Pošlete nám je sem — moc se na ně těšíme.</p>
+      <h1>Sdílejte svoje fotky a videa</h1>
+      <p>Máte vzpomínky ze svatby nebo příprav? Pošlete nám je sem — moc se na ně těšíme.</p>
     </div>
 
     <div id="photo-upload">
@@ -368,20 +368,21 @@
 
       <div id="pu-upload-panel">
         <div class="pu-card pu-manual">
-          <h2>Nebo nahrajte přímo do složky</h2>
-          <p>Pokud vám vyhovuje spíš Google Drive, můžete fotky nahrát ručně do naší sdílené složky:</p>
+          <h2>Videa — nejlépe přes Google Drive</h2>
+          <p>Pro videa (zejména delší klipy) doporučujeme nahrát přímo do naší sdílené složky — je to spolehlivější než přes formulář níže. Fotky tam můžete přidat taky:</p>
           <p style="margin-top:0.6rem"><a id="pu-drive-link" href="#" target="_blank" rel="noopener">Otevřít složku na Google Drive</a></p>
         </div>
 
-        <p class="pu-divider">— nebo nahrajte tady —</p>
+        <p class="pu-divider">— nebo nahrajte fotky tady —</p>
 
         <div class="pu-card">
           <div id="pu-error" class="pu-error" hidden role="alert"></div>
 
           <div id="pu-dropzone" class="pu-dropzone">
-            <p>Přetáhněte fotky nebo krátká videa sem<br>nebo</p>
+            <p>Přetáhněte fotky sem<br>nebo</p>
             <button type="button" id="pu-choose-btn" class="pu-choose-btn">Vybrat soubory</button>
-            <p style="font-size:0.85rem">JPEG, PNG, HEIC, WebP, MP4, MOV, WebM · max. 20 MB na soubor</p>
+            <p style="font-size:0.85rem">Fotky: JPEG, PNG, HEIC, WebP · max. 20 MB<br>Krátká videa: MP4, MOV, WebM · max. 40 MB</p>
+            <p style="font-size:0.8rem; margin-top:0.55rem; color:var(--mid)">Delší nebo větší videa prosím nahrajte do složky výše.</p>
           </div>
           <input
             type="file"
@@ -397,7 +398,7 @@
 
           <div id="pu-preview-list" class="pu-preview-list"></div>
 
-          <button type="button" id="pu-upload-btn" class="pu-upload-btn" disabled>Nahrát fotky</button>
+          <button type="button" id="pu-upload-btn" class="pu-upload-btn" disabled>Nahrát</button>
         </div>
       </div>
     </div>
@@ -419,13 +420,14 @@
         uploadMode: onGithubPages && appsScriptReady ? 'apps-script' : 'multipart',
         driveFolderUrl: 'https://drive.google.com/drive/folders/1n7GYR_Vjrfv2T2DYal5X1GUFh5c5uFSb',
         strings: {
-          errRejected: 'Některé soubory jsme přeskočili (nepodporovaný formát nebo větší než 20 MB): ',
+          errRejected: 'Některé soubory jsme přeskočili (nepodporovaný formát nebo překročený limit velikosti): ',
           errGeneric: 'Nahrání se nepovedlo. Zkuste to prosím znovu.',
-          errNetwork: 'Odeslání fotky se nepovedlo — pravděpodobně je soubor moc velký pro nahrání z prohlížeče. Zkuste menší fotku nebo ruční upload do Google Drive.',
-          errPartial: 'Některé fotky se nenahrály. Odstraňte neúspěšné nebo to zkuste znovu.',
+          errNetwork: 'Odeslání se nepovedlo — soubor je pravděpodobně moc velký. Zkuste menší soubor nebo ruční upload do Google Drive.',
+          errPartial: 'Některé soubory se nenahrály. Odstraňte neúspěšné nebo to zkuste znovu.',
           errAccess: 'Server pro nahrávání není veřejně dostupný. V Apps Script nasaďte webovou aplikaci s přístupem „Kdokoli“.',
-          errTimeout: 'Nahrávání trvalo příliš dlouho. Zkuste menší fotku nebo lepší připojení.',
+          errTimeout: 'Nahrávání trvalo příliš dlouho. Zkuste menší soubor, lepší připojení, nebo ruční upload do Google Drive.',
           errTooLarge: 'Fotka je po zmenšení pořád moc velká. Zkuste ji nahrát ručně do Google Drive nebo vybrat menší soubor.',
+          errVideoTooLarge: 'Video je větší než 40 MB. Delší videa prosím nahrajte ručně do Google Drive.',
           statusPreparing: 'Připravuji…',
           statusCompressing: 'Zmenšuji fotku…',
           statusDone: 'Nahráno',
