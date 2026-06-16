@@ -17,10 +17,46 @@
 
   let refreshTimer = 0;
 
+  function parseUploaderFromFilename(name) {
+    const base = (name || '').replace(/^.*[\\/]/, '').trim();
+    if (!base) return '';
+
+    const dot = base.lastIndexOf('.');
+    const stem = dot === -1 ? base : base.slice(0, dot);
+    const patterns = [
+      /^(.+)_(IMG_\d+)$/i,
+      /^(.+)_(DSC\d+)$/i,
+      /^(.+)_(MVIMG_\d+)$/i,
+      /^(.+)_(MVI_\d+)$/i,
+      /^(.+)_(VID_\d+)$/i,
+      /^(.+)_(P\d{7})$/i,
+      /^(.+)_(20\d{12}.*)$/i,
+      /^(.+)_(RPReplay_Final\d+.*)$/i,
+      /^(.+)_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+    ];
+
+    for (let i = 0; i < patterns.length; i++) {
+      const match = stem.match(patterns[i]);
+      if (!match) continue;
+      const safeName = match[1];
+      if (!safeName || /^(test|perm-test|permission-test)/i.test(safeName)) return '';
+      if (!/[a-zA-Z\u00C0-\u024F]/.test(safeName)) return '';
+      return safeName.replace(/_/g, ' ').trim();
+    }
+
+    return '';
+  }
+
+  function photoUploader(photo) {
+    if (photo.uploader) return photo.uploader;
+    return parseUploaderFromFilename(photo.name);
+  }
+
   function initLightbox(container) {
     const lb = document.getElementById('lightbox');
     const lbImg = document.getElementById('lb-img');
     const lbIframe = document.getElementById('lb-iframe');
+    const lbCaption = document.getElementById('lb-caption');
     const lbCount = document.getElementById('lb-counter');
     if (!lb || !lbImg) return;
 
@@ -34,6 +70,10 @@
         lbIframe.hidden = true;
         lbIframe.removeAttribute('src');
       }
+      if (lbCaption) {
+        lbCaption.textContent = '';
+        lbCaption.hidden = true;
+      }
     }
 
     function open(idx) {
@@ -42,6 +82,7 @@
       const item = lightboxItems[current];
       const type = item.dataset.type || 'image';
       const full = item.dataset.full || '';
+      const uploader = item.dataset.uploader || '';
 
       resetMedia();
       lb.classList.toggle('lightbox--video', type === 'video');
@@ -52,6 +93,11 @@
       } else {
         lbImg.hidden = false;
         lbImg.src = full || item.querySelector('img')?.src || '';
+      }
+
+      if (lbCaption && uploader) {
+        lbCaption.textContent = t('captionFrom', 'Od {name}').replace('{name}', uploader);
+        lbCaption.hidden = false;
       }
 
       if (lbCount) lbCount.textContent = (current + 1) + ' / ' + lightboxItems.length;
@@ -215,6 +261,8 @@
       item.dataset.type = isVideo ? 'video' : 'image';
       item.dataset.full = photo.full || '';
       item.dataset.id = photo.id || '';
+      const uploader = photoUploader(photo);
+      if (uploader) item.dataset.uploader = uploader;
 
       const img = document.createElement('img');
       img.src = photo.thumb;

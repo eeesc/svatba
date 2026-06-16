@@ -240,6 +240,39 @@ function buildFilename_(originalName, uploaderName) {
   return safeName + '_' + base.slice(0, dot) + base.slice(dot);
 }
 
+function parseUploaderFromFilename_(fileName) {
+  const base = fileName.replace(/^.*[\\/]/, '').trim();
+  if (!base) return '';
+
+  const dot = base.lastIndexOf('.');
+  const stem = dot === -1 ? base : base.slice(0, dot);
+  const patterns = [
+    /^(.+)_(IMG_\d+)$/i,
+    /^(.+)_(DSC\d+)$/i,
+    /^(.+)_(MVIMG_\d+)$/i,
+    /^(.+)_(MVI_\d+)$/i,
+    /^(.+)_(VID_\d+)$/i,
+    /^(.+)_(P\d{7})$/i,
+    /^(.+)_(20\d{12}.*)$/i,
+    /^(.+)_(RPReplay_Final\d+.*)$/i,
+    /^(.+)_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+  ];
+
+  for (var i = 0; i < patterns.length; i++) {
+    var match = stem.match(patterns[i]);
+    if (match) return formatUploaderLabel_(match[1]);
+  }
+
+  return '';
+}
+
+function formatUploaderLabel_(safeName) {
+  if (!safeName) return '';
+  if (/^(test|perm-test|permission-test)/i.test(safeName)) return '';
+  if (!/[a-zA-Z\u00C0-\u024F]/.test(safeName)) return '';
+  return safeName.replace(/_/g, ' ').trim();
+}
+
 const GALLERY_CACHE_KEY = 'gallery_list_v4';
 const GALLERY_CACHE_SEC = 120;
 
@@ -275,12 +308,14 @@ function buildGalleryList_() {
 
     const id = file.getId();
     makeFileViewable_(file);
+    const uploader = parseUploaderFromFilename_(name);
 
     if (isVideo) {
       photos.push({
         id: id,
         name: name,
         type: 'video',
+        uploader: uploader,
         thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
         full: 'https://drive.google.com/file/d/' + id + '/preview',
         created: file.getDateCreated().toISOString(),
@@ -292,6 +327,7 @@ function buildGalleryList_() {
       id: id,
       name: name,
       type: 'image',
+      uploader: uploader,
       thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
       full: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1920',
       created: file.getDateCreated().toISOString(),

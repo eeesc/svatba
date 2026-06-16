@@ -794,9 +794,13 @@
       object-fit: contain;
     }
 
+    .lightbox img[hidden] {
+      display: none !important;
+    }
+
     .lightbox iframe,
     #lb-iframe {
-      display: block;
+      display: none;
       border: none;
       border-radius: 3px;
       box-shadow: 0 8px 48px rgba(0,0,0,0.5);
@@ -804,18 +808,33 @@
       background: #000;
     }
 
+    .lightbox--video #lb-iframe:not([hidden]) {
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .lightbox-caption {
+      position: fixed;
+      bottom: 2.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.82);
+      font-size: 0.88rem;
+      letter-spacing: 0.03em;
+      max-width: min(90vw, 520px);
+      text-align: center;
+      z-index: 100000;
+      pointer-events: none;
+    }
+
     .lightbox--video .lightbox-stage {
       width: min(92vw, 1100px, calc(85vh * 16 / 9));
       aspect-ratio: 16 / 9;
       max-height: 85vh;
       height: auto;
-    }
-
-    .lightbox--video #lb-iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
     }
 
     .lightbox-close {
@@ -1239,6 +1258,7 @@
       <iframe id="lb-iframe" src="" title="Video" allow="autoplay; fullscreen" allowfullscreen hidden></iframe>
     </div>
     <span class="lightbox-next" id="lb-next">›</span>
+    <span class="lightbox-caption" id="lb-caption" hidden></span>
     <span class="lightbox-counter" id="lb-counter"></span>
   </div>
 
@@ -1254,6 +1274,7 @@
           empty: 'No photos yet — be the first!',
           errLoad: 'Could not load the gallery. Try refreshing the page.',
           errStale: 'The gallery needs an updated Apps Script deploy. Paste apps-script-upload.gs and publish a new web app version.',
+          captionFrom: 'From {name}',
         },
       };
     })();
