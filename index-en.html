@@ -642,17 +642,18 @@
 
     /* ── PHOTOS (Drive gallery) ─────────────────────── */
     .wrap-photos {
-      padding-top: 5.5rem;
+      padding-top: calc(var(--nav-h, 88px) + 2.25rem);
       padding-bottom: 3rem;
     }
 
     .photos-top {
       text-align: center;
       margin-bottom: 2rem;
+      padding-top: 0.35rem;
     }
 
     .photos-heading {
-      font-size: clamp(1.4rem, 3.5vw, 1.85rem);
+      font-size: clamp(1.6rem, 4.5vw, 2.15rem);
       font-weight: 300;
       letter-spacing: 0.04em;
       margin-bottom: 1rem;
@@ -824,6 +825,10 @@
       .gallery { columns: 2 140px; }
       .lightbox-prev { left: 0; }
       .lightbox-next { right: 0; }
+
+      .wrap-photos {
+        padding-top: calc(var(--nav-h, 100px) + 2rem);
+      }
     }
   </style>
 </head>
@@ -1191,8 +1196,19 @@
   <script>
     // ── Nav anchor scroll — land the section title image just below the nav ─
     const navEl = document.querySelector('nav');
-    // Set scroll-padding-top dynamically so scrollIntoView lands titles below the nav
-    document.documentElement.style.scrollPaddingTop = (navEl.offsetHeight + 16) + 'px';
+
+    function syncNavHeight() {
+      if (!navEl) return;
+      const h = navEl.offsetHeight;
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+      document.documentElement.style.scrollPaddingTop = (h + 16) + 'px';
+    }
+
+    syncNavHeight();
+    window.addEventListener('resize', syncNavHeight);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(syncNavHeight).observe(navEl);
+    }
     document.querySelectorAll('nav a[href^="#"]').forEach(link => {
       link.addEventListener('click', function(e) {
         const section = document.querySelector(this.getAttribute('href'));
