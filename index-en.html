@@ -1256,9 +1256,6 @@
           errStale: 'The gallery needs an updated Apps Script deploy. Paste apps-script-upload.gs and publish a new web app version.',
         },
       };
-      window.__galleryListPromise = fetch(listUrl).then(function (res) {
-        return res.text();
-      });
     })();
   </script>
   <script src="js/drive-gallery.js"></script>

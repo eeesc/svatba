@@ -5,8 +5,8 @@
   const listUrl = cfg.listUrl || '';
   const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
   const embedFolderId = cfg.embedFolderId || '';
-  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v3';
-  const cacheTtlMs = cfg.cacheTtlMs || 10 * 60 * 1000;
+  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v4';
+  const cacheTtlMs = cfg.cacheTtlMs || 2 * 60 * 1000;
   const eagerCount = cfg.eagerCount || 6;
   const strings = cfg.strings || {};
   const t = (key, fallback) => strings[key] || fallback;
@@ -14,6 +14,8 @@
   const galleryEl = document.getElementById('drive-gallery');
   const statusEl = document.getElementById('drive-gallery-status');
   if (!galleryEl || !listUrl) return;
+
+  let refreshTimer = 0;
 
   function initLightbox(container) {
     const lb = document.getElementById('lightbox');
@@ -139,24 +141,29 @@
     } catch (_) {}
   }
 
-  function photoIds(photos) {
-    return photos.map(function (p) { return p.id; }).join(',');
+  function freshListUrl() {
+    const join = listUrl.indexOf('?') === -1 ? '?' : '&';
+    return listUrl + join + 'fresh=1&_t=' + Date.now();
   }
 
-  async function fetchListText() {
-    if (window.__galleryListPromise) {
-      const text = await window.__galleryListPromise;
-      window.__galleryListPromise = null;
-      return text;
-    }
-    const res = await fetch(listUrl);
-    return res.text();
+  function scheduleRefresh() {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(function () {
+      loadGallery({ skipCache: true, silent: true });
+    }, 400);
+  }
+
+  async function fetchPhotosGet() {
+    const res = await fetch(freshListUrl());
+    const data = parseJson(await res.text());
+    if (Array.isArray(data.photos)) return data.photos;
+    return null;
   }
 
   async function fetchPhotosPost() {
     const res = await fetch(postUrl, {
       method: 'POST',
-      body: new Blob([JSON.stringify({ action: 'list' })], { type: 'text/plain' }),
+      body: new Blob([JSON.stringify({ action: 'list', fresh: true })], { type: 'text/plain' }),
     });
     const data = parseJson(await res.text());
     if (Array.isArray(data.photos)) return data.photos;
@@ -172,11 +179,9 @@
   }
 
   async function fetchPhotos() {
-    let text = '';
     try {
-      text = await fetchListText();
-      const data = parseJson(text);
-      if (Array.isArray(data.photos)) return data.photos;
+      const fromGet = await fetchPhotosGet();
+      if (fromGet) return fromGet;
     } catch (_) {}
 
     return fetchPhotosPost();
@@ -209,25 +214,37 @@
       item.className = 'gallery-item' + (isVideo ? ' gallery-item--video' : '');
       item.dataset.type = isVideo ? 'video' : 'image';
       item.dataset.full = photo.full || '';
+      item.dataset.id = photo.id || '';
 
       const img = document.createElement('img');
       img.src = photo.thumb;
       img.alt = photo.name || '';
       img.decoding = 'async';
       if (index >= eagerCount) img.loading = 'lazy';
+      img.addEventListener('error', function () {
+        item.remove();
+        scheduleRefresh();
+      }, { once: true });
 
       item.appendChild(img);
       galleryEl.appendChild(item);
     });
 
+    if (!galleryEl.querySelector('.gallery-item')) {
+      renderPhotos([]);
+      return;
+    }
+
     initLightbox(galleryEl);
   }
 
-  async function loadGallery() {
-    const cached = readCache();
+  async function loadGallery(options) {
+    const opts = options || {};
+    const cached = opts.skipCache ? null : readCache();
+
     if (cached && cached.length) {
       renderPhotos(cached);
-    } else {
+    } else if (!opts.silent) {
       setStatus(t('loading', 'Načítám fotky…'), false);
       galleryEl.innerHTML = '';
     }
@@ -235,9 +252,7 @@
     try {
       const photos = await fetchPhotos();
       writeCache(photos);
-      if (!cached || photoIds(cached) !== photoIds(photos)) {
-        renderPhotos(photos);
-      }
+      renderPhotos(photos);
     } catch (err) {
       if (cached && cached.length) return;
       if (!showEmbedFallback()) {
@@ -249,6 +264,11 @@
   loadGallery();
   window.addEventListener('photo-upload:success', function () {
     clearCache();
-    loadGallery();
+    loadGallery({ skipCache: true });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') {
+      loadGallery({ skipCache: true, silent: true });
+    }
   });
 })();

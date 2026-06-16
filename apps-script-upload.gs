@@ -60,7 +60,7 @@ function doGet(e) {
     return json_(testDriveAccess_());
   }
   if (params.action === 'list') {
-    return json_(listGalleryPhotos_());
+    return json_(listGalleryPhotos_(params.fresh === '1'));
   }
   return json_({ ok: true, service: 'photo-upload', hint: 'Add ?action=list or ?test=drive' });
 }
@@ -100,7 +100,7 @@ function doPost(e) {
     const payload = readPayload_(e);
 
     if (safe_(payload.action) === 'list') {
-      return json_(listGalleryPhotos_());
+      return json_(listGalleryPhotos_(true));
     }
 
     const fileName = safe_(payload.fileName);
@@ -240,15 +240,17 @@ function buildFilename_(originalName, uploaderName) {
   return safeName + '_' + base.slice(0, dot) + base.slice(dot);
 }
 
-const GALLERY_CACHE_KEY = 'gallery_list_v3';
-const GALLERY_CACHE_SEC = 300;
+const GALLERY_CACHE_KEY = 'gallery_list_v4';
+const GALLERY_CACHE_SEC = 120;
 
-function listGalleryPhotos_() {
+function listGalleryPhotos_(skipCache) {
   const cache = CacheService.getScriptCache();
-  try {
-    const cached = cache.get(GALLERY_CACHE_KEY);
-    if (cached) return JSON.parse(cached);
-  } catch (_) {}
+  if (!skipCache) {
+    try {
+      const cached = cache.get(GALLERY_CACHE_KEY);
+      if (cached) return JSON.parse(cached);
+    } catch (_) {}
+  }
 
   const result = buildGalleryList_();
   try {

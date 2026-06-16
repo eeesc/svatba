@@ -1224,9 +1224,6 @@
           errStale: 'Galerie potřebuje aktualizovaný Apps Script. V editoru vložte apps-script-upload.gs a nasaďte novou verzi webové aplikace.',
         },
       };
-      window.__galleryListPromise = fetch(listUrl).then(function (res) {
-        return res.text();
-      });
     })();
   </script>
   <script src="js/drive-gallery.js"></script>
