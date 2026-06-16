@@ -197,7 +197,7 @@ function buildFilename_(originalName, uploaderName) {
   return safeName + '_' + base.slice(0, dot) + base.slice(dot);
 }
 
-const GALLERY_CACHE_KEY = 'gallery_list_v1';
+const GALLERY_CACHE_KEY = 'gallery_list_v2';
 const GALLERY_CACHE_SEC = 300;
 
 function listGalleryPhotos_() {
@@ -228,10 +228,11 @@ function buildGalleryList_() {
     if (!isAllowedImage_(name, mime) && !/^image\//.test(mime)) continue;
 
     const id = file.getId();
+    makeFileViewable_(file);
     photos.push({
       id: id,
       name: name,
-      thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400',
+      thumb: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600',
       full: 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1920',
       created: file.getDateCreated().toISOString(),
     });

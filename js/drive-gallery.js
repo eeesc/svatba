@@ -5,7 +5,7 @@
   const listUrl = cfg.listUrl || '';
   const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
   const embedFolderId = cfg.embedFolderId || '';
-  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v1';
+  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v2';
   const cacheTtlMs = cfg.cacheTtlMs || 10 * 60 * 1000;
   const eagerCount = cfg.eagerCount || 6;
   const strings = cfg.strings || {};
@@ -182,12 +182,7 @@
       img.dataset.full = photo.full;
       img.alt = photo.name || '';
       img.decoding = 'async';
-      img.loading = index < eagerCount ? 'eager' : 'lazy';
-      if (index < eagerCount) img.setAttribute('fetchpriority', 'high');
-      img.addEventListener('load', function () {
-        img.classList.add('is-loaded');
-      }, { once: true });
-      if (img.complete) img.classList.add('is-loaded');
+      if (index >= eagerCount) img.loading = 'lazy';
 
       item.appendChild(img);
       galleryEl.appendChild(item);
