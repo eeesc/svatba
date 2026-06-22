@@ -6,7 +6,6 @@
   const galleryEl = document.getElementById(galleryId);
   if (!galleryEl) return;
 
-  const photos = cfg.photos || [];
   const thumbPath = cfg.thumbPath || '';
   const fullPath = cfg.fullPath || thumbPath;
   const eagerCount = cfg.eagerCount || 8;
@@ -17,8 +16,12 @@
     });
   }
 
+  function getPhotos() {
+    return cfg.photos || [];
+  }
+
   function render() {
-    const ordered = sortByFilename(photos);
+    const ordered = sortByFilename(getPhotos());
     galleryEl.innerHTML = '';
 
     ordered.forEach(function (file, index) {
@@ -49,7 +52,7 @@
     }
   }
 
-  if (photos.length) {
+  if (getPhotos().length) {
     render();
     return;
   }
