@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://drive.google.com">
   <link rel="preconnect" href="https://script.google.com">
+  <link rel="preload" as="image" href="fotky-dory/thumbs/01_L1013127.JPG">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -658,7 +659,19 @@
       font-size: clamp(1.6rem, 4.5vw, 2.15rem);
       font-weight: 300;
       letter-spacing: 0.04em;
-      margin-bottom: 1rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .photos-lead {
+      color: var(--mid);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      max-width: 34rem;
+      margin: 0 auto 1.25rem;
+    }
+
+    .wrap-photos--community {
+      padding-top: 2.5rem;
     }
 
     .photos-upload-link {
@@ -681,6 +694,20 @@
     .gallery {
       columns: 3 220px;
       column-gap: 0.75rem;
+    }
+
+    #dora-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      columns: auto;
+      column-gap: 0;
+    }
+
+    #dora-gallery .gallery-item {
+      flex: 1 1 220px;
+      max-width: calc((100% - 1.5rem) / 3);
+      margin-bottom: 0;
     }
 
     .gallery-item {
@@ -905,6 +932,10 @@
       .footer-moth { display: none; }
 
       .gallery { columns: 2 140px; }
+      #dora-gallery .gallery-item {
+        flex-basis: 140px;
+        max-width: calc((100% - 0.75rem) / 2);
+      }
       .lightbox-prev { left: 0; }
       .lightbox-next { right: 0; }
 
@@ -926,12 +957,21 @@
     <a href="#contact" class="nav-kontakt"><span class="nav-link-text">Contact</span></a>
   </nav>
 
-  <div class="wrap wrap-photos" id="photos">
+  <div class="wrap wrap-photos" id="fotky-dory">
     <div class="photos-top">
-      <h2 class="photos-heading">Wedding photos</h2>
+      <h2 class="photos-heading">Photos by Dora</h2>
+      <p class="photos-lead">Professional wedding photography by Dora Černá.</p>
+    </div>
+    <div class="gallery" id="dora-gallery"></div>
+  </div>
+
+  <div class="wrap wrap-photos wrap-photos--community" id="komunitni-fotky">
+    <div class="photos-top">
+      <h2 class="photos-heading">Community photos</h2>
+      <p class="photos-lead">Photos and short videos from our guests — thank you for sharing them with us.</p>
       <a href="upload-photos-en.html" class="photos-upload-link">Share your photos →</a>
     </div>
-    <div id="drive-gallery-status" class="drive-gallery-status">Loading photos…</div>
+    <div id="drive-gallery-status" class="drive-gallery-status" hidden>Loading photos…</div>
     <div class="gallery" id="drive-gallery"></div>
   </div>
 
@@ -1263,6 +1303,18 @@
   </div>
 
   <script>
+    window.STATIC_GALLERY_CONFIG = {
+      galleryId: 'dora-gallery',
+      thumbPath: 'fotky-dory/thumbs/',
+      fullPath: 'fotky-dory/',
+      manifestUrl: 'js/dora-manifest.json',
+      eagerCount: 10,
+    };
+  </script>
+  <script src="js/gallery-lightbox.js"></script>
+  <script src="js/static-gallery.js"></script>
+
+  <script>
     (function () {
       const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzdK_esoaZVUo2zLrKu0k5zYxD3qc0pJ6jKhMbhcP-wcxKD-BRo3unonP8x8OS3YCvinQ/exec';
       const listUrl = APPS_SCRIPT_URL + '?action=list';
@@ -1532,48 +1584,6 @@
       const jitter = i * 3500 + Math.random() * 2000;
       setTimeout(() => runMoth(el, i === 0), jitter);
     });
-
-    // Discreetly pre-cache gallery photos after page settles.
-    // One image every 3 s — invisible, unhurried, stores in browser HTTP cache.
-    (function preloadGallery() {
-      const photos = [
-        'fotky/672c7dcf-fa2b-4abc-ab3e-3fd6674066fc.jpg',
-        'fotky/68462706360__F9641442-FB1F-413F-B432-1B13733306E4.jpeg',
-        'fotky/71664319518__C7A9F2E0-C85B-4E1E-91AE-826EE4E126C8.jpeg',
-        'fotky/7986c5d3-6dde-4fb8-bddf-7a2e8b428a32.jpg',
-        'fotky/7ad0030f-7c47-4ab1-be66-66778d9a5c34.jpg',
-        'fotky/957791E0-6955-4E4A-AB69-8E51C0E5F6F7.JPG',
-        'fotky/960cabc0-3559-4225-af46-33ff5130656f.jpg',
-        'fotky/98c23595-142d-4887-81fe-ee063b4fd756.jpg',
-        'fotky/IMG_0838.jpeg',
-        'fotky/IMG_1282.jpeg',
-        'fotky/IMG_1885.jpeg',
-        'fotky/IMG_20180603_171142_Original.jpg',
-        'fotky/IMG_2634.jpeg',
-        'fotky/IMG_2730.jpeg',
-        'fotky/IMG_2781.jpeg',
-        'fotky/IMG_3128.jpeg',
-        'fotky/IMG_3320.jpeg',
-        'fotky/IMG_3605.jpeg',
-        'fotky/IMG_4745.jpeg',
-        'fotky/IMG_5126.jpeg',
-        'fotky/IMG_6461.jpeg',
-        'fotky/IMG_6843.jpeg',
-        'fotky/IMG_7014.jpeg',
-        'fotky/IMG_7677.jpeg',
-        'fotky/IMG_8049.jpeg',
-        'fotky/IMG_8704.jpeg',
-      ];
-      let i = 0;
-      function next() {
-        if (i >= photos.length) return;
-        const img = new Image();
-        img.src = photos[i++];
-        img.onload = img.onerror = () => setTimeout(next, 3000);
-      }
-      // Start 8 s after page load — page assets get priority first
-      window.addEventListener('load', () => setTimeout(next, 8000));
-    })();
   </script>
 
 </body>
