@@ -19,6 +19,9 @@ for f in "${files[@]}"; do
   out="$THUMBS/$base"
   if [[ ! -f "$out" || "$f" -nt "$out" ]]; then
     sips -Z "$MAX_WIDTH" "$f" --out "$out" >/dev/null
+    if command -v magick >/dev/null; then
+      magick "$out" -fuzz 4% -trim +repage "$out"
+    fi
     echo "thumb: $base"
   fi
 done
