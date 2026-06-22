@@ -664,6 +664,26 @@
       column-gap: 0.75rem;
     }
 
+    .gallery.gallery-masonry {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      columns: auto;
+      column-gap: 0;
+    }
+
+    .gallery-masonry__col {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .gallery-masonry .gallery-item {
+      margin-bottom: 0;
+    }
+
     .gallery-item {
       break-inside: avoid;
       margin-bottom: 0.75rem;
@@ -911,7 +931,7 @@
       <h2 class="photos-heading">Fotky od Dory</h2>
       <p class="photos-lead">Fotografie ze svatby od Dory Kubíčkové.</p>
     </div>
-    <div class="gallery" id="dora-gallery"></div>
+    <div class="gallery gallery-masonry" id="dora-gallery"></div>
   </div>
 
   <!-- KOMUNITNÍ FOTKY -->
@@ -1260,6 +1280,7 @@
       fullPath: 'fotky-dory/',
       manifestUrl: 'js/dora-manifest.json',
       eagerCount: 10,
+      masonry: true,
     };
   </script>
   <script src="js/gallery-lightbox.js"></script>

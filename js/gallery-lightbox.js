@@ -106,7 +106,12 @@ window.GalleryLightbox = (function () {
     initOnce();
     if (!container || !lb) return;
 
-    const localItems = Array.from(container.querySelectorAll('.gallery-item'));
+    let localItems = Array.from(container.querySelectorAll('.gallery-item'));
+    if (localItems.some(function (item) { return item.dataset.photoIndex !== undefined; })) {
+      localItems = localItems.slice().sort(function (a, b) {
+        return Number(a.dataset.photoIndex) - Number(b.dataset.photoIndex);
+      });
+    }
     const localCaption = (options && options.captionFrom) || captionTemplate;
     localItems.forEach(function (item, i) {
       item.onclick = function () {
