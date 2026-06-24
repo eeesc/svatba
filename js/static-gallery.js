@@ -11,6 +11,8 @@
   const eagerCount = cfg.eagerCount || 8;
   const useMasonry = !!cfg.masonry;
   const mobileQuery = window.matchMedia('(max-width: 620px)');
+  const sizeCache = new Map();
+  let layoutTimer = 0;
 
   function sortByFilename(files) {
     return files.slice().sort(function (a, b) {
@@ -49,36 +51,124 @@
     return item;
   }
 
-  function render() {
-    const ordered = sortByFilename(getPhotos());
-    galleryEl.innerHTML = '';
-
-    if (!ordered.length) return;
-
-    if (useMasonry) {
-      const cols = columnCount();
-      const columns = [];
-      for (let c = 0; c < cols; c++) {
-        const col = document.createElement('div');
-        col.className = 'gallery-masonry__col';
-        galleryEl.appendChild(col);
-        columns.push(col);
-      }
-
-      ordered.forEach(function (file, index) {
-        columns[index % cols].appendChild(createItem(file, index));
-      });
-    } else {
-      ordered.forEach(function (file, index) {
-        galleryEl.appendChild(createItem(file, index));
-      });
+  function loadDimensions(file) {
+    if (sizeCache.has(file)) {
+      return Promise.resolve(sizeCache.get(file));
     }
 
+    return new Promise(function (resolve) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.onload = function () {
+        const size = { w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
+        sizeCache.set(file, size);
+        resolve(size);
+      };
+      img.onerror = function () {
+        const size = { w: 3, h: 2 };
+        sizeCache.set(file, size);
+        resolve(size);
+      };
+      img.src = thumbPath + file;
+    });
+  }
+
+  function spacingPx(columns) {
+    const probe = document.createElement('div');
+    probe.className = 'gallery-item';
+    columns[0].appendChild(probe);
+    const itemGap = parseFloat(window.getComputedStyle(probe).marginBottom) || 12;
+    const colGap = parseFloat(window.getComputedStyle(columns[0]).marginRight) || 12;
+    probe.remove();
+    return { itemGap: itemGap, colGap: colGap };
+  }
+
+  function columnWidth(cols, colGap) {
+    const total = galleryEl.clientWidth;
+    if (!total) return 220;
+    return (total - colGap * (cols - 1)) / cols;
+  }
+
+  function buildColumns(cols) {
+    galleryEl.innerHTML = '';
+    const columns = [];
+    for (let c = 0; c < cols; c++) {
+      const col = document.createElement('div');
+      col.className = 'gallery-masonry__col';
+      galleryEl.appendChild(col);
+      columns.push(col);
+    }
+    return columns;
+  }
+
+  function attachLightbox() {
     if (window.GalleryLightbox) {
       window.GalleryLightbox.attach(galleryEl, {
         captionFrom: cfg.captionFrom,
       });
     }
+  }
+
+  function renderFlat(ordered) {
+    galleryEl.innerHTML = '';
+    ordered.forEach(function (file, index) {
+      galleryEl.appendChild(createItem(file, index));
+    });
+    attachLightbox();
+  }
+
+  function renderMasonry(ordered) {
+    const cols = columnCount();
+    if (!ordered.length) {
+      galleryEl.innerHTML = '';
+      return;
+    }
+
+    Promise.all(ordered.map(function (file) { return loadDimensions(file); }))
+      .then(function (sizes) {
+        const columns = buildColumns(cols);
+        const spacing = spacingPx(columns);
+        const colHeights = new Array(cols).fill(0);
+        const width = columnWidth(cols, spacing.colGap);
+
+        ordered.forEach(function (file, index) {
+          const size = sizes[index];
+          const estHeight = (size.h / size.w) * width;
+
+          let target = 0;
+          for (let c = 1; c < cols; c++) {
+            if (colHeights[c] < colHeights[target]) target = c;
+          }
+
+          columns[target].appendChild(createItem(file, index));
+          colHeights[target] += estHeight + spacing.itemGap;
+        });
+
+        attachLightbox();
+      })
+      .catch(function () {
+        renderFlat(ordered);
+      });
+  }
+
+  function render() {
+    const ordered = sortByFilename(getPhotos());
+    if (!ordered.length) {
+      galleryEl.innerHTML = '';
+      return;
+    }
+
+    if (useMasonry) {
+      renderMasonry(ordered);
+      return;
+    }
+
+    renderFlat(ordered);
+  }
+
+  function scheduleRender() {
+    clearTimeout(layoutTimer);
+    layoutTimer = setTimeout(render, 120);
   }
 
   function start() {
@@ -99,8 +189,11 @@
       .catch(function () {});
   }
 
-  if (useMasonry && mobileQuery.addEventListener) {
-    mobileQuery.addEventListener('change', render);
+  if (useMasonry) {
+    if (mobileQuery.addEventListener) {
+      mobileQuery.addEventListener('change', scheduleRender);
+    }
+    window.addEventListener('resize', scheduleRender);
   }
 
   start();

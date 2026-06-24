@@ -698,21 +698,26 @@
 
     .gallery.gallery-masonry {
       display: flex;
-      gap: 0.75rem;
       align-items: flex-start;
-      columns: auto;
-      column-gap: 0;
+      columns: unset;
+      column-gap: unset;
     }
 
-    .gallery-masonry__col {
+    #dora-gallery .gallery-masonry__col {
       flex: 1 1 0;
       min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+      margin-right: 0.75rem;
     }
 
-    .gallery-masonry .gallery-item {
+    #dora-gallery .gallery-masonry__col:last-child {
+      margin-right: 0;
+    }
+
+    #dora-gallery .gallery-masonry__col .gallery-item {
+      margin-bottom: 0.75rem;
+    }
+
+    #dora-gallery .gallery-masonry__col .gallery-item:last-child {
       margin-bottom: 0;
     }
 
