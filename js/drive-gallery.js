@@ -5,8 +5,8 @@
   const listUrl = cfg.listUrl || '';
   const postUrl = cfg.postUrl || listUrl.replace(/\?.*$/, '');
   const embedFolderId = cfg.embedFolderId || '';
-  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v5';
-  const cacheTtlMs = cfg.cacheTtlMs || 2 * 60 * 1000;
+  const cacheKey = cfg.cacheKey || 'svatba_gallery_photos_v6';
+  const cacheTtlMs = cfg.cacheTtlMs || 10 * 60 * 1000;
   const eagerCount = cfg.eagerCount || 6;
   const strings = cfg.strings || {};
   const t = (key, fallback) => strings[key] || fallback;
@@ -108,7 +108,8 @@
     } catch (_) {}
   }
 
-  function freshListUrl() {
+  function listUrlForFetch(forceFresh) {
+    if (!forceFresh) return listUrl;
     const join = listUrl.indexOf('?') === -1 ? '?' : '&';
     return listUrl + join + 'fresh=1&_t=' + Date.now();
   }
@@ -120,17 +121,20 @@
     }, 400);
   }
 
-  async function fetchPhotosGet() {
-    const res = await fetch(freshListUrl());
+  async function fetchPhotosGet(forceFresh) {
+    const res = await fetch(listUrlForFetch(forceFresh));
     const data = parseJson(await res.text());
     if (Array.isArray(data.photos)) return data.photos;
     return null;
   }
 
-  async function fetchPhotosPost() {
+  async function fetchPhotosPost(forceFresh) {
     const res = await fetch(postUrl, {
       method: 'POST',
-      body: new Blob([JSON.stringify({ action: 'list', fresh: true })], { type: 'text/plain' }),
+      body: new Blob(
+        [JSON.stringify({ action: 'list', fresh: !!forceFresh })],
+        { type: 'text/plain' }
+      ),
     });
     const data = parseJson(await res.text());
     if (Array.isArray(data.photos)) return data.photos;
@@ -145,13 +149,13 @@
     return [];
   }
 
-  async function fetchPhotos() {
+  async function fetchPhotos(forceFresh) {
     try {
-      const fromGet = await fetchPhotosGet();
+      const fromGet = await fetchPhotosGet(forceFresh);
       if (fromGet) return fromGet;
     } catch (_) {}
 
-    return fetchPhotosPost();
+    return fetchPhotosPost(forceFresh);
   }
 
   function showEmbedFallback() {
@@ -223,7 +227,7 @@
     }
 
     try {
-      const photos = await fetchPhotos();
+      const photos = await fetchPhotos(!!opts.skipCache);
       writeCache(photos);
       renderPhotos(photos);
     } catch (err) {
@@ -243,6 +247,11 @@
   }
 
   const communitySection = document.getElementById('komunitni-fotky');
+  if (communitySection && listUrl) {
+    // Warm the Apps Script list cache while the user browses Dora's photos.
+    fetch(listUrl).catch(function () {});
+  }
+
   if (communitySection && 'IntersectionObserver' in window) {
     const observer = new IntersectionObserver(function (entries) {
       if (entries[0].isIntersecting) {
@@ -260,8 +269,8 @@
     loadGallery({ skipCache: true });
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && driveGalleryStarted) {
-      loadGallery({ skipCache: true, silent: true });
+    if (document.visibilityState === 'visible' && driveGalleryStarted && !readCache()) {
+      loadGallery({ silent: true });
     }
   });
 })();

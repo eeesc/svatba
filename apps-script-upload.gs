@@ -100,7 +100,7 @@ function doPost(e) {
     const payload = readPayload_(e);
 
     if (safe_(payload.action) === 'list') {
-      return json_(listGalleryPhotos_(true));
+      return json_(listGalleryPhotos_(payload.fresh === true || payload.fresh === '1'));
     }
 
     const fileName = safe_(payload.fileName);
@@ -285,7 +285,7 @@ function formatUploaderLabel_(safeName) {
 }
 
 const GALLERY_CACHE_KEY = 'gallery_list_v4';
-const GALLERY_CACHE_SEC = 120;
+const GALLERY_CACHE_SEC = 300;
 
 function listGalleryPhotos_(skipCache) {
   const cache = CacheService.getScriptCache();
@@ -318,7 +318,6 @@ function buildGalleryList_() {
     if (!isAllowedImage_(name, mime) && !isVideo && !/^image\//.test(mime)) continue;
 
     const id = file.getId();
-    makeFileViewable_(file);
     const uploader = parseUploaderFromFilename_(name);
 
     if (isVideo) {
